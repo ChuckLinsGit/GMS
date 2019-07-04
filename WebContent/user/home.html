@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>主页</title>
+
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/jumbotron.css" rel="stylesheet">
+  </head>
+
+  <body @click="checkCookie()">
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">导航</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="UserManager.html">用户管理</a>
+          <a class="navbar-brand" href="/GMS/equip/qcgl.html">器材管理</a>
+          <a class="navbar-brand" href="/GMS/dist/field.html#/Home">场地管理</a>
+          <a class="navbar-brand" href="/GMS/event/event_welcome.html">赛事管理</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <div class="navbar-form navbar-right" id="LAR">
+            <button type="submit" class="btn btn-success" data-toggle="modal" data-target="#loginModal">登录</button>
+            <a href="RoleOfCertification.html" role="button" class="btn btn-success">
+              注册
+            </a>
+          </div>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" 
+       aria-hidden="true" method="post" action="/User/login.do">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+              &times;
+            </button>
+            <h4 class="modal-title" id="loginModalLabel">
+              登录
+            </h4>
+          </div>
+          <div class="modal-body">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label for="UAccountID" class="col-sm-3 control-label">账号：</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" name="UAccountID" v-model="UAccountID">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="UPassword" class="col-sm-3 control-label">密码：</label>
+                <div class="col-sm-6">
+                  <input type="password" class="form-control" name="UPassword" v-model="UPassword">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="center-block" style="width:112px;">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">取消
+                  </button>
+                  <button type="button" class="btn btn-primary" @click="checklogin">
+                    确认
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <a href="#" data-toggle="modal" data-target="#RPModal">忘了密码</a>
+            <a href="RoleOfCertification.html">注册</a>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal -->
+    </div>
+
+    <div class="modal fade" id="RPModal" tabindex="-1" role="dialog" aria-labelledby="RPModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+              &times;
+            </button>
+            <h4 class="modal-title" id="RPModalLabel">
+              重置密码
+            </h4>
+          </div>
+          <div class="modal-body">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label for="UAccountID" class="col-sm-3 control-label">账号：</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="POE" class="col-sm-3 control-label">手机号码/电子邮箱：</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="center-block" style="width:112px;">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">取消
+                  </button>
+                  <button type="button" class="btn btn-primary" @click="readCookie">
+                    确认
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <p>&copy; 2016 Company, Inc.</p>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal -->
+    </div>
+
+    <div class="container">
+
+      <hr>
+
+      <footer>
+        <p>&copy; 2016 Company, Inc.</p>
+      </footer>
+    </div> 
+
+    <script src="static/js/vue.min.js"></script>
+    <script src="static/js/cookie.js"></script>
+    <script src="static/js/qs.js"></script>
+    <script src="static/js/axios.min.js"></script>
+    <script>window.jQuery || document.write('<script src="static/js/jquery.min.js"><\/script>')</script>
+    <script src="static/js/bootstrap.min.js"></script>
+  </body>
+
+  <script>
+var LM = new Vue({
+    el: '#loginModal',
+    data: {
+    	UAccountID:"",
+    	UPassword:"",
+    	UName:"",
+    	UID:"",
+    	PID:""
+    },
+    methods:{
+    	checklogin:function(){
+    		var UPassword = this.UPassword,
+    		    UAccountID = this.UAccountID;
+   		axios({
+   		      url:'/GMS/User/login.do',
+   		      method:'post',
+   		      data:Qs.stringify({
+   		    	   'UPassword':UPassword,
+   		           'UAccountID':UAccountID
+   		        })
+   		     })
+   		     .then(resp => {
+   		    	 if(resp.data.length>0){
+   		    		 this.UName=resp.data[0].UName;
+	 	            $('#loginModal').modal('hide');
+	 	            $('#LAR').html('<a href="PersonalCenter.html"><h4>'+this.UName +'</h4></a>');
+	 	            this.setCookie('UName',resp.data[0].UID+";"+resp.data[0].UName+";"+1, 1);
+	 	            var test=this.getCookie('UName');
+	 	            alert(test[2]);
+   		    	 }else{
+   	   		    	 alert("密码或账号错误！");
+   		    	 }
+   		    })
+   		    .catch(error =>{
+   		      console.log('err');
+   		    })
+   		},
+    	addPID:function(){
+    		var UID = this.UID;
+   		axios({
+   		      url:'/GMS/User/sePID.do',
+   		      method:'post',
+   		      data:Qs.stringify({
+   		           'UID':UID
+   		        })
+   		     })
+   		     .then(resp => {
+    		    	this.PID=resp.data[0].PID;
+   		    	console.log(resp.data);
+   		    })
+   		    .catch(error =>{
+   		      console.log('err');
+   		    })
+   		},
+   		checkCookie:function(){
+   			var user=this.getCookie("UName");
+   			if (user!=null){
+   				$('#LAR').html('<a href="PersonalCenter.html"><h4>'+user[1] +'</h4></a>');
+   			}
+   		}
+    }
+  })
+LM.checkCookie();
+ 
+var RPM=new Vue({
+    el: '#RPModal',
+    data: {
+    },
+    methods:{
+   		readCookie:function(){
+    		 var cookieString = this.getCookie('UName');
+    		 if (cookieString!=null){
+    		 	alert(cookieString[1]);
+    		 }else{
+    			 alert('没有cookie');
+    		 }
+   		}
+    }
+  })
+</script>
+</html>

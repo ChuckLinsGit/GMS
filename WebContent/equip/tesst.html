@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>test</title>
+</head>
+<body>
+	<div id="test">
+	<button v-on:click="testfunction($event)">get</button>
+	<button v-on:click="euipmenttest($event)">器材</button>
+	<div>{{testlist}}</div>
+	<button v-on:click="postfunction($event)">post</button>
+	<div>{{hhh}}</div>
+	<div>
+	<button v-on:click="testtimefunction($event)">testtime</button>
+	<p>{{timestamp}}</p>
+	</div>
+	</div>
+	<!-- <div>
+		<form action="http://localhost:8080/GMS/test/Testmodelandview.do" method="post">
+			<input type="text" name="username" value="jojo"/>
+			<input type="text" name="password" value="123456"/>
+			<input type="submit" value="提交"/>
+		</form>
+	</div> -->
+	<script src="js/vue.js"></script>
+	<script src="js/axios.min.js"></script>
+	<script src="js/qs.js"></script>
+	<script src="js/moment.js"></script>
+	<script>
+	var data = {
+		testlist:[ ],
+		hhh:[],
+		timestamp:[],
+	};
+	var vue = new Vue({
+		el:"#test",
+		data:data,
+		methods:{
+			testfunction:function(event){
+				console.log("点击了test按钮");
+				axios
+					.get('http://localhost:8080/GMS/test/Testjson.do')
+					.then((response) =>{
+						this.testlist = response.data;
+						console.log(response.data);
+					})
+					.catch((error) =>{
+						console.log('error');
+					})
+			},
+			postfunction:function(event){
+				console.log("点击了post");
+				axios({
+					method:'post',
+					url:'http://localhost:8080/GMS/test/Testmodelandview.do',
+					data:Qs.stringify({
+						"username":"jiji",
+						"password":"123528"
+					}),
+					headers:{
+						'Content-Tpye':'application/json;charset=UTF-8;charset=UTF-8',//第一个转码格式是resp的时候转成utf-8
+						'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',//第二个转码格式是req负载（payload）带参数的时候转成utf-8到后台
+					},
+				}).then((res)=>{
+					console.log(res.data);
+				});
+			},
+			euipmenttest:function(event){
+				console.log("点击了查询器材");
+				axios
+					.get('http://localhost:8080/GMS/equipment/findallequipment.do')
+					.then((res)=>{
+						this.testlist = res.data;
+					}).catch((error)=>{
+						console.log('error');
+					})
+			},
+			testtimefunction:function(event){
+				console.log("点击了testtime按钮");
+				 var t1=moment(1561334400000).format('YYYY-MM-DD HH:mm:ss');
+				 console.log(t1);
+				 var templist;
+				axios
+					.get('http://localhost:8080/GMS/ordersview/findallOrders.do')
+					.then((response) =>{
+						templist = response.data;
+						/* console.log(this.timestamp.length); */
+						console.log(moment(templist[0].equip_backtime).format('YYYY-MM-DD HH:mm:ss'));
+						for(let i=0;i<templist.length;i++){
+							templist[i].equip_backtime = moment(templist[i].equip_backtime).format('YYYY-MM-DD HH:mm:ss');
+							templist[i].equip_renttime = moment(templist[i].equip_renttime).format('YYYY-MM-DD HH:mm:ss');
+						}
+						console.log(templist);
+						this.timestamp = templist;
+					})
+					.catch((error) =>{
+						console.log('error');
+					})
+			},
+		},
+	});
+	</script>
+</body>
+</html>

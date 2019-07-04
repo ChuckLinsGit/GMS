@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="gms.DAO.user.RoleAPermissionDao">
+    <resultMap type="RoleAPermission" id="roleAPermissionMap">
+        <result column="RAPID" property="RAPID"/>
+        <result column="RAP_RID" property="RID"/>
+        <result column="RAP_PID" property="PID"/>
+    </resultMap>
+    
+	<insert id="insertRoleAPermission" parameterType="RoleAPermission">
+		INSERT INTO ROLEAPERMISSION (RAP_RID,RAP_PID) VALUES(#{RID},#{PID})
+	</insert>
+</mapper>

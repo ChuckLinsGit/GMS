@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 通过namespace为DAO接口实现代理 -->               
+<mapper namespace="gms.DAO.event.IEventApplicationDAO">
+	<insert id="insert" parameterType="EventApplication">
+		INSERT INTO eventapplication (userID,fieldID,equipmentID,date,endDate,content,judgement,state)
+		VALUES (#{userID},#{fieldID},#{equipmentID},#{date},#{endDate},#{content},#{judgement},0)
+	</insert>
+	
+	<delete id="delete" parameterType="int">
+		UPDATE eventapplication
+		SET	state=3
+		WHERE applicationID=#{applicationID}
+	</delete>
+	
+	<delete id="deleteByFieldID" parameterType="int">
+		UPDATE eventapplication
+		SET	state=3
+		WHERE fieldID=#{fieldID}
+	</delete>
+	
+	<delete id="deleteByEquipmentID" parameterType="int">
+		UPDATE eventapplication
+		SET	state=3
+		WHERE equipmentID=#{equipmentID}
+	</delete>
+	
+	<update id="update" parameterType="EventApplication">
+		UPDATE eventapplication
+		SET userID=#{userID},fieldID=#{fieldID},equipmentID=#{equipmentID},date=#{date},endDate=#{endDate},content=#{content},judgement=#{judgement},state=#{state}
+		WHERE 	applicationID=#{applicationID} 
+	</update>
+	
+	<update id="refuseEventApplication" parameterType="int">
+		UPDATE eventapplication
+		SET state=2
+		WHERE 	applicationID=#{applicationID}
+	</update>
+	
+	<update id="acceptEventApplication" parameterType="int">
+		UPDATE eventapplication
+		SET state=1
+		WHERE 	applicationID=#{applicationID}
+	</update>
+	
+	<select id="selectByID" parameterType="int" resultType="EventApplication">
+		SELECT applicationID,userID,fieldID,equipmentID,date,endDate,content,judgement,state
+		FROM eventapplication
+		WHERE applicationID=#{applicationID} AND state <![CDATA[<]]> 3
+	</select>
+	
+	<select id="selectAll" resultType="EventApplication">
+		SELECT applicationID,userID,fieldID,equipmentID,date,endDate,content,judgement,state
+		FROM eventapplication 
+		WHERE state <![CDATA[<]]> 3
+	</select>
+	
+	<select id="selectWaitingEventApplication" resultType="EventApplication">
+		SELECT applicationID,userID,fieldID,equipmentID,date,endDate,content,judgement,state
+		FROM eventapplication 
+		WHERE state = 0
+	</select>
+	
+	<select id="selectByUserID" parameterType="int" resultType="EventApplication">
+		SELECT applicationID,userID,fieldID,equipmentID,date,endDate,content,judgement,state
+		FROM eventapplication
+		WHERE userID=#{userID} AND state <![CDATA[<]]> 3
+	</select>
+	
+	<select id="selectByFieldID" parameterType="int" resultType="EventApplication">
+		SELECT applicationID,userID,fieldID,equipmentID,date,endDate,content,judgement,state
+		FROM eventapplication
+		WHERE fieldID=#{fieldID} AND state <![CDATA[<]]> 3
+	</select>
+	
+	<select id="selectByEquipmentID" parameterType="int" resultType="EventApplication">
+		SELECT applicationID,userID,fieldID,equipmentID,date,endDate,content,judgement,state
+		FROM eventapplication
+		WHERE equipmentID=#{equipmentID} AND state <![CDATA[<]]> 3
+	</select>
+	
+	<select id="selectOverdueEventApplicationIDs" parameterType="java.sql.Date" resultType="int">
+		SELECT applicationID 
+		FROM eventapplication
+		WHERE state <![CDATA[<]]> 2 AND TO_DAYS(endDate) <![CDATA[<]]> TO_DAYS(NOW())
+	</select>
+	
+</mapper>

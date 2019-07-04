@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>体育馆管理系统（重大赛事）</title>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+	<script src="js/jquery-3.3.1.min.js"></script>
+    <!-- HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 -->
+    <!-- 警告：通过 file:// 协议（就是直接将 html 页面拖拽到浏览器中）访问页面时 Respond.js 不起作用 -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+    <![endif]-->
+    <!-- <style>
+    	#waibiankuang hover{
+    		border-width: 5px;
+    	}
+    </style> -->
+    <script src="js/vue.js"></script>
+  	<script src="js/axios.min.js"></script>
+	<script src="js/qs.js"></script>
+	<script src="js/moment.js"></script>
+    <script type="text/javascript">
+    //
+		Vue.prototype.$getCookie = function getCookie(name) {
+        var arr;
+    	//^n量词匹配任何开头为 n 的字符串。
+    	//n$ 量词匹配任何结尾为 n 的字符串。
+    	//n? 量词匹配任何包含零个或一个 n 的字符串。
+    	//n+ 量词匹配包含至少一个 n 的任何字符串
+    	//n* 量词匹配包含零个或多个 n 的任何字符串。
+        var reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+    	//unescape() 函数可对通过 escape() 编码的字符串进行解码。
+    	//match()匹配
+        if (arr = document.cookie.match(reg)){
+    	 var cookieString=unescape(arr[2]);
+    		if(cookieString.length!=0){
+    		 var cookies=cookieString.split(";");
+    		 return cookies;
+    		}
+        }
+        else
+            return null;
+    		document.cookie = name + "=" + escape(value);
+        }
+    </script>
+  </head>
+  <body style="background-color: #EEEEEE">
+  <div id="qcgl"><!-- 全局div -->
+  	<div><!-- 顶部导航条 -->
+		<nav class="navbar navbar-default navbar-fixed-top navbar-inverse" style="background-color: #2D4887">
+		  <div class="container">
+		    <div class="navbar-header">
+		      <a class="navbar-brand" style="color:#FFFFFF">体育馆</a>
+		    </div>
+		    <!-- Collect the nav links, forms, and other content for toggling -->
+		    <div class="collapse navbar-collapse">
+		      <ul class="nav navbar-nav">
+		        <li><a href="/GMS/event/event_welcome.html" style="color: #FFFFFF">赛事</a></li>
+		        <li class="dropdown">
+		          <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" style="color: #FFFFFF">器材<span class="caret"></span></a>
+		          <ul class="dropdown-menu">
+		            <li v-on:click="Openrent($event)"><a class="btn btn-default" style="border: 0px">器材租借</a></li>
+		            <li v-on:click="Openbook($event)"><a class="btn btn-default" style="border: 0px">器材预约</a></li>		            
+		            <li role="separator" class="divider"></li>
+		            <li><a class="btn btn-default" style="border: 0px">器材归还</a></li>
+		            <li><a class="btn btn-default" style="border: 0px">取消预约</a></li>
+		          </ul>
+		        </li>
+		        <li><a href="/GMS/dist/field.html#/Home" style="color: #FFFFFF">场地</a></li>
+		      </ul>
+		    <a v-if="state == 0" type="button" href="/GMS/user/home.html" class="btn btn-default navbar-btn navbar-right">登录</a>
+		    <div class="navbar-header navbar-right">
+		      <a class="navbar-brand" style="color:#FFFFFF">{{username}}</a>
+		    </div>
+		    </div><!-- /.navbar-collapse -->
+		  </div><!-- /.container-fluid -->
+		</nav>
+  	</div><!-- 顶部导航条 -->
+  	<nav class="navbar navbar-fixed-top hide" style="padding-top: 50px">
+		<div class="alert alert-success" role="alert">
+			haha
+		</div>
+	</nav>
+  	
+  	<div class="container" style="padding-top: 70px;"><!-- 器材管理系统中间 -->
+  		<div style="padding-bottom: 30px;width: 400px;margin-left: auto;margin-right:auto;"><!-- 器材搜索栏 -->
+  				<div class="input-group" >
+  					<!-- <label>器材搜索</label> -->
+  					<input type="text" v-model="findnameorid" class="form-control" placeholder="请输入器材名称或器材编号">
+  					<span class="input-group-btn">
+  						<button class="btn btn-default" type="button" v-on:click="Search($event)">搜索</button>
+  					</span>
+  				</div>
+  		</div><!-- 器材搜索栏 -->
+
+		<div class="col-md-12"><!-- 器材列表 -->
+		<div class="panel panel-primary">
+			<div class="panel-heading" v-if="howmany == 0">器材列表<button class="btn btn-default pull-right btn-xs" v-on:click="Getequip($event)">刷新</button></div>
+			<div class="panel-heading" v-if="howmany != 0">查询结果</div>
+			<div class="panel-body">
+			<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>器材编号</th>
+					<th>器材名称</th>
+					<th>可用器材</th>
+					<th>器材租借</th>
+				</tr>
+			</thead>
+			<tbody>
+				<template v-for="(lists , index) in equipmentlist">
+					<tr v-if="howmany == 0 && index >= (page-1)*size && index < page*size">
+						<td>{{lists.equip_id}}</td>
+						<td>{{lists.equip_name}}</td>
+						<td>{{lists.equip_last}}</td>
+						<td><button class="btn btn-default" v-on:click="Bookorder(index,$event)">租借</button></td>
+					</tr>
+				</template>
+				<template v-for="(listsa , index) in searchlist">
+					<tr v-if="howmany != 0">
+						<td>{{listsa.equip_id}}</td>
+						<td>{{listsa.equip_name}}</td>
+						<td>{{listsa.equip_last}}</td>
+						<td><button class="btn btn-default" v-on:click="Bookorder(index,$event)">租借</button></td>
+					</tr>
+				</template>
+					<tr>
+					<td colspan="6">
+					<button class="btn btn-default pull-right" v-if="howmany != 0" v-on:click="Back($event)">返回</button>
+					</td>
+					</tr>
+			</tbody>
+			</table>
+			<div class="pull-right">
+			<nav aria-label="Page navigation">
+			  <ul class="pagination" id="hahaa">
+			    <li class="hide" id="prepage" v-on:click="Prepages($event)">
+			      <a aria-label="Previous">
+			        <span aria-hidden="true">&laquo;</span>前一页
+			      </a>
+			    </li>
+			    <template v-for="pages in Math.ceil(equipmentlist.length/size)" v-if="howmany == 0 && equipmentlist.length >= size">
+			    <li v-if="pages == 1" class="active" v-on:click="Numpage(pages,$event)"><a>{{pages}}</a></li>
+			    <li v-else v-on:click="Numpage(pages,$event)"><a>{{pages}}</a></li>
+			    <li v-if="pages == Math.ceil(equipmentlist.length/size)" id="nextpage" v-on:click="Nextpages($event)">
+			      <a aria-label="Next">
+			        后一页<span aria-hidden="true">&raquo;</span>
+			      </a>
+			    </li>
+			    </template>
+			    <template v-for="pages in Math.ceil(searchlist.length/size)" v-if="howmany != 0 && searchlist.length >= size">
+			    <li v-if="pages == 1" class="active"><a v-on:click="Numpage(pages,$event)">{{pages}}</a></li>
+			    <li v-else><a v-on:click="Numpage(pages,$event)">{{pages}}</a></li>
+			    <li v-if="pages == Math.ceil(searchlist.length/size)" id="nextpage" v-on:click="Nextpages($event)">
+			      <a aria-label="Next">
+			        后一页<span aria-hidden="true">&raquo;</span>
+			      </a>
+			    </li>
+			    </template>
+			    
+			  </ul>
+			</nav>
+			</div>
+			</div>
+		</div>
+		</div><!-- 器材列表 -->
+		
+		<div>
+			<div class="modal fade" id="rentorbook" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"><!-- 租借或预约 -->
+			  <div class="modal-dialog modal-lg" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			        <h4 class="modal-title">租借器材</h4>
+			      </div>
+			      <div class="modal-body">
+			        <div>
+			        	<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>器材编号</th>
+									<th>器材名称</th>
+									<th>租借数量</th>
+									<th>租借时长</th>
+									<th>租借时间</th>
+									<th>删除</th>
+									<th>操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<template v-for="(temps,index) in booklist" v-if="rentorbook == 2">
+									<tr>
+										<td>{{temps.equip_id}}</td>
+										<td>{{temps.equip_name}}</td>
+										<td>
+											<div class="btn-group btn-group-xs" role="group">
+											  <button type="button" class="btn btn-default" v-on:click="SubNum(index,$event)">-</button>
+											  <a class="btn btn-default">{{temps.num}}</a>
+											  <button type="button" class="btn btn-default" v-on:click="AddNum(index,$event)">+</button>
+											</div>
+										</td>
+										<td>
+										<div class="input-group input-group-sm" style="width: 90px">
+										  <input type="text" class="form-control" v-model="temps.backtime">
+										  <span class="input-group-addon">小时</span>
+										</div>
+										</td>
+										<td><input type="text" class="form-control" v-model="temps.renttime" style="width: 180px"></td>
+										<td><button class="btn btn-default btn-danger btn-xs" v-on:click="Subbooklist(index,$event)">删除</button></td>
+										<td><button class="btn btn-default btn-primary btn-xs" v-on:click="Sendbooklist(index,$event)">租借</button></td>
+									</tr>
+								</template>
+							</tbody>
+						</table>
+			        </div>
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-default" data-dismiss="modal">再看看</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+		</div><!-- 弹出框 -->
+		<hr>
+		<footer>
+		<div>
+			<p>广东海洋大学体育馆管理系统 | @吃瓜宇</p>
+		</div>
+  		</footer>
+  	</div><!-- 器材管理系统中间 -->
+  	</div>
+  	<script>
+  		var data = {
+	  			page:1,//当前页数
+	  			size:5,//每页最大值
+	  			ordertype:1,//归还或取消预约，1为归还，2为取消预约
+	  			state:1,//用户登陆状态，0为未登陆，1为登陆
+	  			temporder:[],
+	  			booklist:[],
+	  			bookNum:3,
+	  			templist:[],
+	  			rentorbook:1,
+	  			findnameorid:[],
+	  			userid:6,//test
+	  			username:[],
+	  			currtimestamp:[],
+	  			user_id:4,
+	  			rentlasttime:1,
+	  			howmany:0,
+	  			equipmentlist:[
+	  			 {equip_id:1, equip_name:"篮球", equip_price:15, equip_last:28},
+	  			{equip_id:2, equip_name:"足球", equip_price:10, equip_last:35},
+	  			{equip_id:3, equip_name:"乒乓球", equip_price:1, equip_last:150},
+	  			{equip_id:4, equip_name:"乒乓球拍", equip_price:5, equip_last:300},
+	  			{equip_id:5, equip_name:"羽毛球", equip_price:2, equip_last:100},
+	  			{equip_id:6, equip_name:"羽毛球拍", equip_price:10, equip_last:75} 
+	  			],
+	  			searchlist:[],
+	  			order:[
+	  			/* {orders_id:1, equip_id:2, equip_name:"足球", equip_price:10, equip_num:1, equip_backtime:1561707665649, equip_renttime:1561448465649, user_name:"老谢", user_id:3, orders_state:1},
+	  			{orders_id:2, equip_id:5, equip_name:"羽毛球", equip_price:2, equip_num:1, equip_backtime:1561707665649, equip_renttime:1561448465649, user_name:"老黄", user_id:5, orders_state:1},
+	  			{orders_id:3, equip_id:3, equip_name:"乒乓球", equip_price:1, equip_num:1, equip_backtime:1561707665649, equip_renttime:1561448465649, user_name:"梁其健", user_id:7, orders_state:2},
+	  			{orders_id:3, equip_id:4, equip_name:"乒乓球拍", equip_price:5, equip_num:1, equip_backtime:1561707665649, equip_renttime:1561448465649, user_name:"梁其健", user_id:7, orders_state:2},
+	  			{orders_id:4, equip_id:3, equip_name:"乒乓球", equip_price:1, equip_num:1, equip_backtime:1561707665649, equip_renttime:1561448465649, user_name:"耶路·马伦", user_id:6, orders_state:1},
+	  			{orders_id:4, equip_id:5, equip_name:"羽毛球", equip_price:2, equip_num:1, equip_backtime:1561707665649, equip_renttime:1561448465649, user_name:"耶路·马伦", user_id:6, orders_state:1},
+	  			{orders_id:5, equip_id:2, equip_name:"足球", equip_price:10, equip_num:1, equip_backtime:1561707665649, equip_renttime:1561448465649, user_name:"老陈", user_id:2, orders_state:1},
+	  			{orders_id:5, equip_id:3, equip_name:"乒乓球", equip_price:1, equip_num:1, equip_backtime:1561707665649, equip_renttime:1561448465649, user_name:"老陈", user_id:2, orders_state:1} */
+	  			 ],
+	  		};
+  		var vue = new Vue({
+  			el: '#qcgl',
+  			data:data,
+  			/*创建时就加载*/
+  			created:function(){
+  				axios
+				.get('http://localhost:8080/GMS/equipment/bggetallequip.do')
+				.then((res)=>{
+					console.log(res.data);
+					this.equipmentlist = res.data;
+				}).catch((error)=>{
+					console.log('error');
+				})
+  				this.getCookieFr();
+  			},
+  			
+  			methods:{
+  				getCookieFr(){
+  					var cookieStr='';
+  					cookieStr = this.$getCookie('UName');
+  					console.log(cookieStr);
+  					if(cookieStr != null){
+  						this.userid = cookieStr[0];
+  						this.username = cookieStr[1];
+  						this.state = cookieStr[2];
+  					}else{
+  						this.state = 0;
+  					}
+  					this.user_id = this.userid;
+  				},
+  				Search:function(event){ 
+  					console.log(this.findnameorid)
+  					if(this.findnameorid == 0){
+  						console.log("输入为空")
+  						return;
+  					}
+  					axios({
+  						method:'post',
+  						url:'http://localhost:8080/GMS/equipment/findequipbyidorname.do',
+  						data:Qs.stringify({
+  							"equip_name":this.findnameorid,
+  							"equip_id":this.findnameorid
+  						}),
+  						headers:{
+  							'Content-Tpye':'application/json;charset=UTF-8;charset=UTF-8',//第一个转码格式是resp的时候转成utf-8
+  							'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',//第二个转码格式是req负载（payload）带参数的时候转成utf-8到后台
+  						},
+  					}).then((res)=>{
+  						this.searchlist = res.data;
+  						if(res.data == 0){
+  							console.log("没有");
+  							window.alert("没有找到器材！")
+  							this.howmany = 0;
+  						}else{
+  							console.log("有");
+  							this.howmany = 1;
+  						}
+  						console.log(res.data);
+  						/* this.searchlist = res.data;
+  						this.howmany = this.searchlist.length; */
+  					});
+  				},
+  				Numpage:function(pages){
+  					console.log(pages);
+  					if(this.page == pages){
+  						return;
+  					}
+  					this.page = pages;
+  					$("#hahaa li").removeClass("active")
+  					if (event.target.tagName.toUpperCase() == "LI") {
+                    	$(event.target).addClass("active");
+	                }
+	                else {
+	                    $(event.target).parent().addClass("active");
+	                }
+	                if(this.page == 1){
+	                	$("#prepage").addClass("hide");
+	                }else{
+	                	$("#prepage").removeClass("hide");
+	                }
+	                console.log(Math.ceil(this.equipmentlist.length/this.size));
+	                if(this.howmany == 0){
+	                	if(this.page == Math.ceil(this.equipmentlist.length/this.size)){
+	                		$("#nextpage").addClass("hide");
+		                }else{
+		                	$("#nextpage").removeClass("hide");
+		                	}
+	                }else{
+	                	if (this.page == Math.ceil(this.searchlist.length/this.size)) {
+	                		$("#nextpage").addClass("hide");
+		                }else{
+		                	$("#nextpage").removeClass("hide");
+	                	}
+	                }
+  				},
+  				Prepages:function(event){
+  					$("#hahaa .active").prev().trigger("click");
+  				},
+  				Nextpages:function(event){
+  					$("#hahaa .active").next().trigger("click");
+  				},
+  				Returnorders:function(index){
+  					this.temporder = [];
+  					console.log(this.order[index]);
+  					this.temporder.push(this.order[index]);
+  					this.ordertype = 1;
+  					$("#orders").modal("toggle");
+  				},
+  				//创建订单
+  				Createorders:function(rentorbooklist,index,addlist,orderstate){
+  					var temprentlist = [{renttime:moment(this.currtimestamp).utcOffset(480).format('YYYY-MM-DD HH:mm:ss'),
+  										num:1,backtime:1,user_id:this.user_id}];
+		  					temprentlist[0]["equip_id"] = addlist[index].equip_id;
+		  					temprentlist[0]["equip_name"] = addlist[index].equip_name;
+		  					temprentlist[0]["orders_state"] = orderstate;
+		  					rentorbooklist.push(temprentlist[0]);
+  				},
+  				//器材预约
+  				Bookorder:function(index){
+  					this.Gettime();
+  					if(this.state < 1){
+  						window.alert("请先登录！再预约器材！")
+  					}else{
+	  					this.rentorbook = 2;
+	  					if(this.howmany ==0){
+	  						for(var i = 0;i<this.booklist.length;i++){
+	  							if(this.equipmentlist[index].equip_id == this.booklist[i].equip_id){
+	  								this.booklist[i].num += 1;
+	  								$("#rentorbook").modal("toggle");
+	  								return;
+	  							}
+	  						}
+	  						this.Createorders(this.booklist,index,this.equipmentlist,2);
+		  					$("#rentorbook").modal("toggle");
+		  					console.log(JSON.stringify(this.booklist));
+	  					}else{
+	  						for(var i = 0;i<this.booklist.length;i++){
+	  							if(this.searchlist[index].equip_id == this.booklist[i].equip_id){
+	  								this.booklist[i].num += 1;
+	  								$("#rentorbook").modal("toggle");
+	  								return;
+	  							}
+	  						}
+	  						this.Createorders(this.booklist,index,this.searchlist,2);
+		  					$("#rentorbook").modal("toggle");
+		  					console.log(JSON.stringify(this.booklist));
+	  					}
+	  				}
+  				},
+  				//从搜索列表返回器材列表
+  				Back:function(event){
+  					this.howmany = 0;
+  				},
+  				//获得当前时间
+  				Gettime:function(event){
+  					this.currtimestamp = new Date().getTime();
+  				},
+  				//删除租借器材列表
+  				Subrentlist:function(index){
+  					this.rentlist.splice(index,1);
+  					if(this.rentlist.length == 0){
+  						$("#rentorbook").modal("toggle");
+  					}
+  				},
+  				//删除预约器材列表
+  				Subbooklist:function(index){
+  					this.booklist.splice(index,1);
+  					if(this.booklist.length == 0){
+  						$("#rentorbook").modal("toggle");
+  					}
+  				},
+  				Addrent:function(index){
+  					this.rentlist[index].num += 1;
+  					bookNum = this.rentlist[index]["num"];
+  					console.log(this.rentlist[index].num);
+  				},
+  				Subrent:function(index){
+  					if(this.rentlist[index].num == 1){
+  						this.Subrentlist(index);
+  						return;
+  					}
+  					this.rentlist[index].num -= 1;
+  				},
+  				//增加预约器材个数
+  				AddNum:function(index){
+  					this.booklist[index].num += 1;
+  					bookNum = this.booklist[index]["num"];
+  					console.log(this.booklist[index].num);
+  				},
+  				//减少预约器材个数
+  				SubNum:function(index){
+  					if(this.booklist[index].num == 1){
+  						this.Subbooklist(index);
+  						return;
+  					}
+  					this.booklist[index].num -= 1;
+  				},
+  				Openrent:function(event){
+  					this.rentorbook = 1;
+  					console.log("show");
+  					$("#rentorbook").modal("show");
+  				},
+  				Openbook:function(event){
+  					this.rentorbook = 2;
+  					console.log("show");
+  					$("#rentorbook").modal("show");
+
+  				},
+  				Sendbooklist:function(index){
+  					var temprentlist = this.booklist;
+  					var numb = 0;
+  					console.log(this.booklist[index]);	
+  					for(let i=0;i < temprentlist.length;i++){
+  						console.log(temprentlist[i].renttime);
+  						temprentlist[i].backtime = (moment(temprentlist[i].renttime,'YYYY-MM-DD HH:mm:ss').valueOf()+temprentlist[i].backtime*60*60*1000);
+  						temprentlist[i].backtime = moment(temprentlist[i].backtime).utcOffset(480).format('YYYY-MM-DD HH:mm:ss');
+  						/*temprentlist[i].renttime = moment(temprentlist[i].renttime).utcOffset(480).format('YYYY-MM-DD HH:mm:ss');*/
+  					}
+  					this.booklist = temprentlist;
+  					console.log(this.booklist[index]);
+  					$("#rentorbook").modal("hide");
+  					axios({
+  						method:'post',
+  						url:'http://localhost:8080/GMS/ordercreate/bgcreateorder.do',
+  						data:Qs.stringify(this.booklist[index]), 
+  						headers:{
+  							'Content-Tpye':'application/json;charset=UTF-8;charset=UTF-8',//第一个转码格式是resp的时候转成utf-8
+  							'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',//第二个转码格式是req负载（payload）带参数的时候转成utf-8到后台
+  						},
+  					}).then((res)=>{
+						window.location.href='/GMS/event/event_manager_application.html';
+					}).catch((err)=>{
+						console.log("err");
+					})
+				},
+  				Getequip:function(event){
+	  				axios
+					.get('http://localhost:8080/GMS/equipment/bggetallequip.do')
+					.then((res)=>{
+						console.log(res.data);
+						this.equipmentlist = res.data;
+					}).catch((error)=>{
+						console.log('error');
+					})
+	  			},	
+  			},
+  		});		
+ 	</script>
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+    <script src="js/jquery.min.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>

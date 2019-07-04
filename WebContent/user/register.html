@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>注册页</title>
+
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/jumbotron.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="home.html">主页</a>
+        </div>
+      </div>
+    </nav>
+    <!-- 模态框（Modal） -->
+
+    <div class="container">
+      <header>
+        <h1>注册页>></h1>
+      </header>
+
+      <hr>
+
+      <div style="margin: 10% auto;" id="VRegieter" action="/User/register.do" method="post">
+        <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <label for="UName" class="col-sm-4 control-label">用户名：</label>
+            <div class="col-sm-4">
+              <input type="text" class="form-control" name="UName" v-model="UName">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="UAccountID" class="col-sm-4 control-label">账号：</label>
+            <div class="col-sm-4">
+              <input type="text" class="form-control" name="UAccountID" v-model="UAccountID">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="UPassword" class="col-sm-4 control-label">密码：</label>
+            <div class="col-sm-4">
+              <input type="password" class="form-control" name="UPassword" v-model="UPassword">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="VUPassword" class="col-sm-4 control-label">确认密码：</label>
+            <div class="col-sm-4">
+              <input type="password" class="form-control" name="VUPassword" v-model="VUPassword">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="UPhone" class="col-sm-4 control-label">手机号码：</label>
+            <div class="col-sm-4">
+              <input type="text" class="form-control" name="UPhone" v-model="UPhone">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="UEmail" class="col-sm-4 control-label">电子邮箱：</label>
+            <div class="col-sm-4">
+              <input type="text" class="form-control" name="UEmail" v-model="UEmail">
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="center-block" style="width:112px;">
+              <a role="button" class="btn btn-default" href="RoleOfCertification.html">
+                取消
+              </a>
+              <button type="button" class="btn btn-primary" @click="checkregister">
+                    确认
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <hr>
+
+      <footer>
+        <p>&copy; 2016 Company, Inc.</p>
+      </footer>
+    </div> 
+
+    <script src="static/js/vue.min.js"></script>
+    <script src="static/js/qs.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>window.jQuery || document.write('<script src="static/js/jquery.min.js"><\/script>')</script>
+    <script src="static/js/bootstrap.min.js"></script>
+  </body>
+
+  <script>
+  var vm=new Vue({
+    el: '#VRegieter',
+    data: {
+      UAccountID:'123',
+      UPassword:'123',
+      VUPassword:'123',
+      UPhone: '123',
+      UEmail: '123',
+      UName: '123',
+    },
+    methods:{
+      checkregister:function(){
+  		var UPassword = this.UPassword,
+  		    UAccountID = this.UAccountID,
+  		    UPhone = this.UPhone,
+  		    UEmail = this.UEmail,
+  		    UName = this.UName;
+  		if(UPassword==this.VUPassword && UAccountID!=null && UPassword!=null){
+  			axios({
+   		      url:'/GMS/User/register.do',
+   		      method:'post',
+   		      data:Qs.stringify({
+   		    	   'UPassword':UPassword,
+   		           'UAccountID':UAccountID,
+   		           'UPhone':UPhone,
+		           'UEmail':UEmail,
+		           'UName':UName
+   		        })
+   		     })
+   		     .then(resp => {
+   		    	 if(resp.data.length>0){
+   		    		if(!UAccountID){
+   		    			alert("账号未填写");
+   		    		}else{
+   		    			alert(resp.data[0].error1);
+   		    		}
+   		    		if(UPhone!=null){
+   		    			alert(resp.data[0].error2);
+   		    		}
+   		    		if(UEmail!=null){
+   		    			alert(resp.data[0].error3);
+   		    		}
+  	 	            console.log(resp.data);
+   		    	 }else{
+   	   		    	 alert("成功！");
+   		    	 }
+   		    })
+   		    .catch(error =>{
+   		      console.log('err');
+   		    })
+  		}else{
+  			alert("error");
+  		}
+ 	  }
+    }
+  })
+ </script>
+</html>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 通过namespace为DAO接口实现代理,namespace="写接口路径" -->
+<!-- 由mapper标签开始，由/mapper结束，可以把它想成一个空间，是映射文件-->
+<!-- 增删改查标签里的id:一定要和接口里对应的方法名一致,parameterType：输入类型，
+             规范输入数据类型，指明查询时使用的参数类型 -->
+
+<mapper namespace="gms.DAO.user.UserDao">
+    <resultMap type="User" id="userMap">
+    <id property="UID" column="UID" />
+        <result column="UName" property="UName"/>
+        <result column="UAccountID" property="UAccountID"/>
+        <result column="UPassword" property="UPassword"/>
+        <result column="UEmail" property="UEmail"/>
+        <result column="UPhone" property="UPhone"/>
+        <collection property="UserARole" ofType="UserARole">
+			<id property="UARID" column="UARID" />
+			<result property="UAR_UID" column="UAR_UID" />
+			<result property="UAR_RID" column="UAR_RID" />
+			<collection property="Role" ofType="Role">
+				<id property="RID" column="RID" />
+				<result property="RType" column="RType" />
+				<result property="RName" column="RName" />
+				<collection property="RoleAPermission" ofType="RoleAPermission">
+					<id property="RAPID" column="RAPID" />
+					<result property="RID" column="RAP_RID" />
+					<result property="PID" column="RAP_PID" />
+					<collection property="Permission" ofType="Permission">
+						<id property="PID" column="PID" />
+						<result property="PLevelD" column="PLevelD" />
+						<result property="PName" column="PName" />
+						<collection property="PAPFunction" ofType="PAPFunction">
+							<id property="PAPFID" column="PAPFID" />
+							<result property="PID" column="PAPF_PID" />
+							<result property="PFID" column="PAPF_PFID" />
+							<collection property="PFunction" ofType="PFunction">
+								<id property="PFID" column="PFID" />
+								<result property="PFName" column="PFName" />
+								<result property="PFDetails" column="PFDetails" />
+							</collection>
+						</collection>
+					</collection>
+				</collection>
+			</collection>
+		</collection>
+    </resultMap>
+    
+    <sql id="zd">
+        UName,UAccountID,UPassword,UEmail,UPhone
+    </sql>
+    
+    <select id="login" resultMap="userMap" parameterType="User">
+        select UID,<include refid="zd"/>from user where `UAccountID` = #{UAccountID} AND `UPassword` = #{UPassword}
+    </select>
+    
+    <select id="check" resultMap="userMap" parameterType="User">
+        select UID,<include refid="zd"/>from user 
+        <where>
+        	<if test="UAccountID != null and UAccountID != ''">
+				AND `UAccountID` = #{UAccountID}
+			</if>
+			<if test="UEmail != null and UEmail != ''">
+				AND `UEmail` = #{UEmail}
+			</if>
+			<if test="UPhone != null and UPhone != ''">
+				AND `UPhone` = #{UPhone}
+			</if>
+        </where>
+    </select>
+    
+    <select id="userList" resultMap="userMap" parameterType="User">
+        select UID,<include refid="zd"/>,RName,PLevelD,PName,PFName,PFDetails
+        from user
+		JOIN userarole ON user.UID = userarole.UAR_UID
+		JOIN role ON userarole.UAR_RID = role.RID
+		JOIN roleapermission ON role.RID = roleapermission.RAP_RID
+		JOIN permission ON  roleapermission.RAP_PID = permission.PID
+		JOIN papfunction ON permission.PID = papfunction.PAPF_PID
+		JOIN pfunction ON  papfunction.PAPF_PFID = pfunction.PFID
+    </select>
+    
+    <select id="sePID" resultMap="userMap" parameterType="User">
+        select PID
+        from user
+		JOIN userarole ON user.UID = userarole.UAR_UID
+		JOIN role ON userarole.UAR_RID = role.RID
+		JOIN roleapermission ON role.RID = roleapermission.RAP_RID
+		JOIN permission ON  roleapermission.RAP_PID = permission.PID
+		where `UID`=#{UID}
+    </select>
+    
+    <select id="updateId" resultMap="userMap" parameterType="User">
+        select UID,<include refid="zd"/>from user
+	    <where>
+	        UID=#{UID}
+	    </where>
+    </select>
+    
+    <update id="update" parameterType="User">
+    update user
+         set UAccountID=#{UAccountID},UPassword=#{UPassword},UName=#{UName},
+             UPhone=#{UPhone},UEmail=#{UEmail}
+         where UID=#{UID}
+    </update>
+    
+	<insert id="insertUser" parameterType="User">
+		INSERT INTO USER (<include refid="zd"/>) VALUES(#{UName},#{UAccountID},#{UPassword},#{UEmail},#{UPhone})
+	</insert>
+</mapper>

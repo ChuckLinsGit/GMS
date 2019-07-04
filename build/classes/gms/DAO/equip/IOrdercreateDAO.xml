@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gms.DAO.equip.IOrdercreateDAO" >
+
+	<!-- 创建订单 -->
+	<!-- <insert id="createorders" parameterType="Orders">
+		INSERT INTO orders
+		VALUES (NULL,#{orders_userid},NOW(),#{orders_state})
+	</insert> -->
+	
+	<!-- 创建详细订单 -->
+	<insert id="createorders" parameterType="Ordersdetail">
+		<selectKey keyProperty="orders_id" order="AFTER" resultType="java.lang.Integer">
+		SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO ordersdetail
+		VALUE (#{orders_id},#{equip_id},#{user_id},#{orders_renttime},#{orders_backtime},#{equip_num},NOW(),#{orders_state})
+	</insert>
+	
+	<!-- 根据订单id查询订单 -->
+	<select id="findordersbyid" parameterType="Integer" resultType="Ordersdetail">
+		SELECT * FROM ordersdetail WHERE orders_id = #{orders_id}
+	</select>
+	
+	<!-- 根据订单id修改订单标志位
+		标志位(orders_state)：1为租借器材，2为预约器材，3为已取消，4为审核中，5为正常归还，6为破损归还
+	 -->
+	 <update id="currstatebyid" parameterType="Ordersdetail">
+	 	UPDATE ordersdetail SET orders_state = #{orders_state} WHERE orders_id = #{orders_id}
+	 </update>
+	 
+	 <!-- 重大赛事查找可以退的预约订单 -->
+	 <select id="bggetcandroporder" resultType="Ordersdetail">
+	 	SELECT orders_id, equip_num, user_id, equip_id
+		FROM ordersdetail
+		WHERE orders_state = 2
+		ORDER BY orders_renttime DESC
+	 </select>
+	 
+	 <!-- 重大赛事被退的用户写进消息列表 -->
+	 <insert id="bgadddropmassage" parameterType="Ordersdetail">
+	 	INSERT INTO dropmassage VALUES (NULL,#{user_id},#{orders_id},1)
+	 </insert>
+	 
+	 <!-- 用户查看是否有消息 -->
+	 <!-- <select id="bguserseeifmassage" parameterType="Integer" resultType="Integer">
+	 	SELECT orders_id FROM dropmassage WHERE user_id = #{user_id}
+	 </select> -->
+	 
+	 <!-- 用户已查看消息 -->
+	 <!-- <update id="bguserseemassage" parameterType="Integer">
+	 	UPDATE dropmassage SET drop_state = 2 WHERE user_id = #{user_id}
+	 </update> -->
+	
+	<!-- 系统检测归还过期 -->
+	<select id="noreturnontime" parameterType="Ordersdetail">
+		SELECT user_id,orders_id FROM ordersdetail WHERE (orders_backtime <![CDATA[<=]]> NOW()) AND orders_state = 1
+	</select>
+	
+	<!-- 系统检测预约过期 -->
+	<select id="nobookontime" parameterType="Ordersdetail">
+		SELECT user_id,orders_id FROM ordersdetail WHERE (orders_backtime <![CDATA[<=]]> NOW()) AND orders_state = 2
+	</select>
+</mapper>

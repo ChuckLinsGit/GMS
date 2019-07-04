@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="gms.DAO.user.UserARoleDao">
+    <resultMap type="UserARole" id="useraroleMap">
+        <result column="UARID" property="UARID"/>
+        <result column="UAR_UID" property="UAR_UID"/>
+        <result column="UAR_RID" property="UAR_RID"/>
+    </resultMap>
+    
+	<insert id="insertUserARole" parameterType="UserARole">
+		INSERT INTO USERAROLE (UAR_UID,UAR_RID) VALUES(#{UAR_UID},#{UAR_RID})
+	</insert>
+	
+	<select id="selectRID" resultMap="useraroleMap" parameterType="UserARole">
+	    select RID from userarole where `UID`=#{UID}
+	</select>
+</mapper>

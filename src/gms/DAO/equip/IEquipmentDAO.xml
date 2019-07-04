@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gms.DAO.equip.IEquipmentDAO" >
+
+	<!-- 查询所有器材（用户）+ -->
+	<select id="findallequipment" resultType="Equipment">
+		SELECT
+		equipment.equip_id,
+		equipment.equip_name,
+		equipment.equip_price,
+		equipment.equip_last
+		FROM
+		equipment
+		WHERE
+		equipment.equip_state = 1
+	</select>
+	
+	<!-- 查询所有器材（管理员） -->
+	<select id="gmfindallequipment" resultType="EquipmentGM">
+		SELECT * FROM equipment WHERE equip_state = 1
+	</select>
+	
+	<!-- 添加一个器材（管理员）* -->
+	<insert id="gmaddequipment" parameterType="EquipmentGM">
+		INSERT INTO equipment 
+		VALUES (NULL,#{equip_name},#{equip_value},#{equip_price},#{equip_sum},#{equip_sum},1,0,0,0)
+	</insert>
+	
+	<!-- 修改一个器材（管理员）* -->
+	<update id="gmupdateequipbyid" parameterType="EquipmentGM">
+		UPDATE equipment 
+		SET equip_name=#{equip_name},equip_value=#{equip_value},equip_price=#{equip_price},equip_sum=#{equip_sum},equip_last=#{equip_last}
+		WHERE equip_id=#{equip_id}
+	</update>
+	
+	<!-- 根据器材名称或ID模糊查询器材（用户）+ -->
+	<select id="findequipbynameorid" parameterType="String" resultType="Equipment">
+		SELECT
+		equipment.equip_id,
+		equipment.equip_name,
+		equipment.equip_price,
+		equipment.equip_last
+		FROM equipment
+		WHERE (equip_name LIKE CONCAT(CONCAT('%',#{equip_name},'%')) OR equip_id LIKE CONCAT(CONCAT('%',#{equip_id},'%'))) 
+		AND equip_state = 1
+	</select>
+	
+	<!-- 租借器材（用户）+ -->
+	<update id="rentequip" parameterType="Ordersdetail">
+		UPDATE equipment 
+		SET equip_last = (equip_last-#{equip_num}),equip_rent = (equip_rent+#{equip_num})
+		WHERE equip_id = #{equip_id}
+	</update>
+	
+	<!-- 预约器材（用户）+ -->
+	<update id="bookequip" parameterType="Ordersdetail">
+		UPDATE equipment 
+		SET equip_last = equip_last-#{equip_num},equip_book = equip_book+#{equip_num}
+		WHERE equip_id = #{equip_id}
+	</update>
+	
+	<!-- 取消预约（用户）+ -->
+	<update id="nodobook" parameterType="Ordersdetail">
+		UPDATE equipment 
+		SET equip_last = equip_last+#{equip_num},equip_book = equip_book-#{equip_num}
+		WHERE equip_id = #{equip_id}
+	</update>
+	
+	<!-- 正常器材归还（管理员）* -->
+	<update id="gmreturnequip" parameterType="Ordersdetail">
+		UPDATE equipment 
+		SET equip_last = equip_last+#{equip_num},equip_rent = equip_rent-#{equip_num}
+		WHERE equip_id = #{equip_id}
+	</update>
+	
+	<!-- 损坏器材归还（管理员）* -->
+	<update id="gmreturndamageequip" parameterType="Ordersdetail">
+		UPDATE equipment 
+		SET equip_damage = equip_damage+#{equip_num},equip_rent = equip_rent-#{equip_num}
+		WHERE equip_id = #{equip_id}
+	</update>
+	
+	<!-- 删除器材（非消失）* -->
+	<update id="gmdeleteequipbyid" parameterType="Integer">
+		UPDATE equipment SET equip_state = 2 WHERE equip_id=#{equip_id}
+	</update>
+	
+	<!-- 查看删除的器材（管理员）* -->
+	<select id="gmfinddeleteequip" resultType="EquipmentGM">
+		SELECT * FROM equipment WHERE equip_state=2
+	</select>
+	
+	<!-- 恢复删除器材（管理员）* -->
+	<update id="gmreturndeleteequip" parameterType="Integer">
+		UPDATE equipment SET equip_state = 1 WHERE equip_id=#{equip_id}
+	</update>
+	
+	<!-- 根据器材名称模糊查询器材（管理员） -->
+	<select id="gmfindequipbynameorid" parameterType="EquipmentGM" resultType="EquipmentGM">
+		SELECT *
+		FROM equipment
+		WHERE equip_name
+		LIKE (equip_name LIKE CONCAT(CONCAT('%',#{equip_name},'%')) OR equip_id LIKE CONCAT(CONCAT('%',#{equip_id},'%'))) 
+		AND equip_state = 1
+	</select>
+	
+	<!-- 重大赛事获取器材列表 -->
+	<select id="bggetallequip" resultType="EquipmentBG">
+		SELECT equip_id,equip_name,equip_last,equip_book
+		FROM equipment
+		WHERE equip_state = 1
+	</select>
+	
+	<!-- 重大赛事根据id获取器材 -->
+	<select id="bggetequipbyid" parameterType="Integer" resultType="EquipmentBG">
+		SELECT equip_id,equip_name,equip_last,equip_book
+		FROM equipment
+		WHERE equip_state = 1 AND equip_id = #{equip_id}
+	</select>
+</mapper>

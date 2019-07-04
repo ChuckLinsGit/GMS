@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+                <!-- namespace：全命名空间 -->
+                <!-- parameterType：传入参数映射类型 -->
+                <!-- resultType：结果映射类型 -->
+<mapper namespace="gms.DAO.field.FieldNoticeMapper">
+	<insert id="insertNotice" parameterType="FieldNotice">
+		INSERT INTO fieldnotice (noticename,noticemessage,fieldid,noticestate)
+		VALUES(#{noticename},#{noticemessage},#{fieldid},'未超时')
+	</insert>
+
+	<delete id="deleteNotice" parameterType="java.lang.Integer">
+		<!-- DELETE FROM fieldnotice WHERE noticefid=#{noticefid} -->
+		UPDATE fieldnotice
+		SET noticestate='已超时'
+		WHERE noticefid=#{noticefid}
+	</delete>
+	
+	<update id="updateNotice" parameterType="FieldNotice">
+		UPDATE fieldnotice
+		SET noticename=#{noticename},noticemessage=#{noticemessage},fieldid=#{fieldid}
+		WHERE noticefid=#{noticefid}
+	</update>
+	
+	<select id="selectNoticeById" parameterType="java.lang.Integer" resultType="FieldNotice">
+		SELECT * FROM fieldnotice WHERE noticefid=#{noticefid}
+	</select>
+	
+	<select id="selectAll" resultType="FieldNotice">
+		SELECT * FROM fieldnotice WHERE noticestate='未超时'
+	</select>
+	
+	<select id="selectNoticeByNameDim" parameterType="java.lang.String" resultType="FieldNotice">
+		SELECT * FROM fieldnotice WHERE noticename LIKE CONCAT(CONCAT('%',#{noticename},'%'))
+		AND noticestate='未超时'
+	</select>
+	
+	<select id="selectFive" resultType="FieldNotice">
+		SELECT * FROM (SELECT * FROM fieldnotice WHERE noticestate='未超时' LIMIT 5) as foo
+	</select>
+	
+	<!-- 连表查询  -->
+	<select id="selectAllWfieldname" resultType="NoticeWithFieldname">
+		SELECT 
+			noticefid,
+			noticename,
+			noticemessage,
+			field.fieldid,
+			field.fieldname 
+		FROM fieldnotice LEFT JOIN field ON field.fieldid=fieldnotice.fieldid
+		WHERE noticestate='未超时'
+	</select>
+	
+	<!-- selectAllWfDeleted -->
+	<select id="selectAllWfDeleted" resultType="NoticeWithFieldname">
+		SELECT 
+			noticefid,
+			noticename,
+			noticemessage,
+			field.fieldid,
+			field.fieldname 
+		FROM fieldnotice LEFT JOIN field ON field.fieldid=fieldnotice.fieldid
+		WHERE noticestate='已超时'
+	</select>
+	
+	<update id="recycleNotice" parameterType="java.lang.Integer">
+		UPDATE fieldnotice
+		SET noticestate='未超时'
+		WHERE noticefid=#{noticefid}
+	</update>
+</mapper>

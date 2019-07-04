@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+                <!-- namespace：全命名空间 -->
+                <!-- parameterType：传入参数映射类型 -->
+                <!-- resultType：结果映射类型 -->
+<mapper namespace="gms.DAO.field.FieldMapper">
+
+	<insert id="insertField" parameterType="Field">
+		INSERT INTO field (fieldname,fieldtype,fieldinout,address,fieldstate,fieldlong,fieldwidth,fieldimg,unitprice,fieldaddordel)
+		VALUES(#{fieldname},#{fieldtype},#{fieldinout},#{address},#{fieldstate},#{fieldlong},#{fieldwidth},#{fieldimg},#{unitprice},'未删除')
+	</insert>
+	
+	<update id="updateField" parameterType="Field">
+		UPDATE field
+		SET fieldname=#{fieldname},fieldtype=#{fieldtype},fieldinout=#{fieldinout},address=#{address},fieldstate=#{fieldstate},fieldlong=#{fieldlong},fieldwidth=#{fieldwidth},fieldimg=#{fieldimg},unitprice=#{unitprice}
+		WHERE fieldid=#{fieldid}
+	</update>
+	
+	<!-- 订单：设置为被租赁 -->
+	<update id="setRentOut" parameterType="int">
+		UPDATE field
+		SET fieldstate='被租赁'
+		WHERE fieldid=#{fieldid}
+	</update>
+	
+	<!-- 订单：设为可借用  -->
+	<update id="setRentOver" parameterType="int">
+		UPDATE field
+		SET fieldstate='可借用'
+		WHERE fieldid=#{fieldid}
+	</update>
+	
+	<select id="selectFieldById" parameterType="java.lang.Integer" resultType="Field">
+		SELECT * FROM field WHERE fieldid=#{fieldid} AND fieldaddordel='未删除'
+	</select>
+	
+	<select id="selectAll" resultType="Field">
+		SELECT * FROM field 
+			WHERE fieldaddordel='未删除'
+	</select>
+	
+	
+	<update id="deleteField" parameterType="java.lang.Integer">
+	<!-- DELETE FROM field WHERE fieldid=#{fieldid} -->
+		UPDATE field
+		SET fieldaddordel='已删除'
+		WHERE fieldid=#{fieldid}
+	</update>
+	
+	<!-- 使场地恢复 -->
+	<update id="setFCanbeUse" parameterType="java.lang.Integer">
+		UPDATE field
+		SET fieldaddordel='未删除'
+		WHERE fieldid=#{fieldid}
+	</update>
+	
+	<select id="selectAllwDel" resultType="Field">
+		SELECT * FROM field
+			WHERE fieldaddordel='已删除'
+	</select>
+	
+	<!-- 查询室内外 -->
+	<select id="findFieldByInOut" parameterType="java.lang.String" resultType="Field">
+	  	SELECT * FROM field WHERE fieldinout=#{fieldinout} AND fieldaddordel='未删除'
+	  </select>
+	  
+	  <!-- 查询是否可以预约 -->
+  	 <select id="findFieldIfVisible" parameterType="java.lang.String" resultType="Field">
+	  	SELECT * FROM field WHERE fieldstate=#{fieldstate} AND fieldaddordel='未删除'
+	  </select>
+	  <!-- 赛事场地查询 -->
+	  <select id="findFieldIfEvent" parameterType="java.lang.String" resultType="Field">
+	  	SELECT * FROM field WHERE fieldstate!=#{fieldstate} AND fieldaddordel='未删除'
+	  </select>
+</mapper>

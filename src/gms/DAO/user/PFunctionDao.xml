@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="gms.DAO.user.PFunctionDao">
+    <resultMap type="PFunction" id="pfunctionMap">
+        <result column="PFID" property="PFID"/>
+        <result column="PFName" property="PFName"/>
+        <result column="PFDetails" property="PFDetails"/>
+    </resultMap>
+    
+	<insert id="insertPFunction" parameterType="PFunction">
+		INSERT INTO PFUNCTION (PFName,PFDetails) VALUES(#{PFName},#{PFDetails})
+	</insert>
+	
+	<select id="pfunctionList" resultMap="pfunctionMap" parameterType="PFunction">
+        select *
+        from pfunction
+    </select>
+</mapper>

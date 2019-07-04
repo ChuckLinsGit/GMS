@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+                <!-- namespace：全命名空间 -->
+                <!-- parameterType：传入参数映射类型 -->
+                <!-- resultType：结果映射类型 -->
+<mapper namespace="gms.DAO.field.RegulationMapper">
+	<insert id="insertRegulation" parameterType="Regulation">
+		INSERT INTO regulation (regname,regcontent,viodispose,regstate)
+		VALUES (#{regname},#{regcontent},#{viodispose},'可用')
+	</insert>
+	<!-- 删除 -->
+	<update id="deleteRegulation" parameterType="int">
+		UPDATE regulation
+		SET regstate='废弃'
+		WHERE regulationid=#{regulationid}
+	</update>
+	
+	<!-- 回收 -->
+	<update id="recycleReg" parameterType="int">
+		UPDATE regulation
+		SET regstate='可用'
+		WHERE regulationid=#{regulationid}
+	</update>
+	
+	<update id="updateRegulation" parameterType="Regulation">
+		UPDATE regulation
+		SET regname=#{regname},regcontent=#{regcontent},viodispose=#{viodispose}
+		WHERE regulationid=#{regulationid}
+	</update>
+	
+	
+	
+	<select id="selectRegulationById" parameterType="java.lang.Integer" resultType="Regulation">
+		SELECT * FROM regulation WHERE regulationid=#{regulationid} AND regstate='可用'
+	</select>
+	<!-- '%${value}%' -->
+	<select id="selectRegulationByName" parameterType="java.lang.String" resultType="Regulation">
+		SELECT * FROM regulation WHERE regulationid LIKE '%${regname}%' AND regstate='可用'
+	</select>
+	<select id="selectAll" resultType="Regulation">
+		SELECT * FROM regulation WHERE regstate='可用'
+	</select>
+	
+	<select id="selectAllDel" resultType="Regulation">
+		SELECT * FROM regulation WHERE regstate='废弃'
+	</select>
+</mapper>

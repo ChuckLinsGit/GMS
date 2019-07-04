@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="gms.DAO.user.PermissionDao">
+    <resultMap type="Permission" id="permissionMap">
+        <result column="PID" property="PID"/>
+        <result column="PLevelD" property="PLevelD"/>
+        <result column="PName" property="PName"/>
+    </resultMap>
+    
+	<insert id="insertPermission" parameterType="Permission">
+		INSERT INTO PERMISSION (PLevelD,PName) VALUES(#{PLevelD},#{PName})
+	</insert>
+	
+	<select id="permissionList" resultMap="permissionMap" parameterType="Permission">
+        select *
+        from permission
+    </select>
+</mapper>

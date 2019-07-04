@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>体育馆管理系统（管理员）</title>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+	<script src="js/jquery-3.3.1.min.js"></script>
+    <!-- HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 -->
+    <!-- 警告：通过 file:// 协议（就是直接将 html 页面拖拽到浏览器中）访问页面时 Respond.js 不起作用 -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+    <![endif]-->
+    <script src="js/vue.js"></script>
+  	<script src="js/axios.min.js"></script>
+	<script src="js/qs.js"></script>
+	<script src="js/moment.js"></script>
+    <script type="text/javascript">
+    //
+		Vue.prototype.$getCookie = function getCookie(name) {
+        var arr;
+    	//^n量词匹配任何开头为 n 的字符串。
+    	//n$ 量词匹配任何结尾为 n 的字符串。
+    	//n? 量词匹配任何包含零个或一个 n 的字符串。
+    	//n+ 量词匹配包含至少一个 n 的任何字符串
+    	//n* 量词匹配包含零个或多个 n 的任何字符串。
+        var reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+    	//unescape() 函数可对通过 escape() 编码的字符串进行解码。
+    	//match()匹配
+        if (arr = document.cookie.match(reg)){
+    	 var cookieString=unescape(arr[2]);
+    		if(cookieString.length!=0){
+    		 var cookies=cookieString.split(";");
+    		 return cookies;
+    		}
+        }
+        else
+            return null;
+    		document.cookie = name + "=" + escape(value);
+        }
+    </script>
+  </head>
+  <body style="background-color: #EEEEEE">
+  <div id="qcgl"><!-- 全局div -->
+  	<div><!-- 顶部导航条 -->
+		<nav class="navbar navbar-default navbar-fixed-top navbar-inverse" style="background-color: #2D4887">
+		  <div class="container">
+		    <div class="navbar-header">
+		      <a class="navbar-brand" style="color:#FFFFFF">体育馆</a>
+		    </div>
+		    <!-- Collect the nav links, forms, and other content for toggling -->
+		    <div class="collapse navbar-collapse">
+		      <ul class="nav navbar-nav">
+		        <li><a href="/GMS/event/event_welcome.html" style="color: #FFFFFF">赛事</a></li>
+		        <li class="active"><a style="color: #FFFFFF">器材</a></li>
+		        <li><a href="/GMS/dist/field.html#/Home" style="color: #FFFFFF">场地</a></li>
+		      </ul>
+		    <button v-if="state == 0" type="button" href="/GMS/user/home.html" class="btn btn-default navbar-btn navbar-right">登录</button>
+		    <div class="navbar-header navbar-right">
+		    	<a v-if="state == 0" class="navbar-brand" style="color:#FFFFFF">游客，请先登录！</a>
+		      <a v-if="state != 0" class="navbar-brand" style="color:#FFFFFF">欢迎你，管理员{{username}}</a>
+		    </div>
+		    </div><!-- /.navbar-collapse -->
+		  </div><!-- /.container-fluid -->
+		</nav>
+
+  	</div><!-- 顶部导航条 -->
+  	<div class="container" style="padding-top: 70px;"><!-- 器材管理系统中间 -->
+  		<div style="padding-bottom: 30px;width: 400px;margin-left: auto;margin-right:auto;"><!-- 器材搜索栏 -->
+  			<!-- <form class="form-inline"> -->
+  				<div class="input-group" >
+  					<!-- <label>器材搜索</label> -->
+  					<input type="text" class="form-control" placeholder="请输入器材名称或器材编号">
+  					<span class="input-group-btn">
+  						<button class="btn btn-default" type="button" v-on:click="Search($event)">搜索</button>
+  					</span>
+  				</div>
+  				
+  			<!-- </form> -->
+  		</div><!-- 器材搜索栏 -->
+
+  		<div><!-- 标签栏 -->
+  			<ul class="nav nav-pills nav-justified" role="tablist">
+			    <li role="presentation" class="active"><a href="#equipmentlists" aria-controls="equipmentlists" role="tab" data-toggle="tab">器材列表</a></li>
+			    <li role="presentation" v-on:click="firstGetorders($event)"><a href="#orderslists" aria-controls="orderslists" role="tab" data-toggle="tab">订单列表</a></li>
+			    <li role="presentation" v-on:click="firstGetchecklist($event)"><a href="#checkorders" aria-controls="checkorders" role="tab" data-toggle="tab">审查列表</a></li>
+			</ul>
+			
+			<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="equipmentlists">
+			<div class="col-md-12"><!-- 器材列表 -->
+			<div class="panel panel-primary" v-if="state > 1">
+				<div class="panel-heading" v-if="howmany == 0">器材列表<button class="btn btn-default btn-xs pull-right" v-on:click="Getequip($event)">刷新</button><button class="btn btn-default btn-xs pull-right" v-on:click="Openadd($event)">添加器材</button></div>
+				<div class="panel-heading" v-if="howmany != 0">查询结果<button class="btn btn-default btn-xs pull-right" v-on:click="Back($event)">返回</button></div>
+				<div class="panel-body">
+				<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>器材编号</th>
+						<th>器材名称</th>
+						<th>器材余量</th>
+						<th>器材租金</th>
+						<th>器材金额</th>
+						<th>器材总量</th>
+						<th>已借走</th>
+						<th>已预约</th>
+						<th>已损坏</th>
+						<th>修改信息</th>
+					</tr>
+				</thead>
+				<tbody>
+					<template v-for="(lists , index) in equipmentlist">
+						<tr v-if="howmany == 0 && index >= (page-1)*size && index < page*size">
+							<td>{{lists.equip_id}}</td>
+							<td>{{lists.equip_name}}</td>
+							<td>{{lists.equip_last}}</td>
+							<td>{{lists.equip_price}}元</td>
+							<td>{{lists.equip_value}}元</td>
+							<td>{{lists.equip_sum}}</td>
+							<td>{{lists.equip_rent}}</td>
+							<td>{{lists.equip_book}}</td>
+							<td>{{lists.equip_damage}}</td>
+							<td><button class="btn btn-default" v-on:click="Correquip(index,$event)">修改</button></td>
+						</tr>
+					</template>
+					<template v-for="(listsa , index) in searchlist">
+						<tr v-if="howmany != 0">
+							<td>{{lists.equip_id}}</td>
+							<td>{{lists.equip_name}}</td>
+							<td>{{lists.equip_last}}</td>
+							<td>{{lists.equip_price}}元</td>
+							<td>{{lists.equip_value}}元</td>
+							<td>{{lists.equip_sum}}</td>
+							<td>{{lists.equip_rent}}</td>
+							<td>{{lists.equip_book}}</td>
+							<td>{{lists.equip_damage}}</td>
+							<td><button class="btn btn-default" v-on:click="">修改</button></td>
+						</tr>
+					</template>
+				</tbody>
+				</table>
+				<div class="pull-right">
+				<nav aria-label="Page navigation">
+				  <ul class="pagination" id="hahaa">
+				    <li class="hide" id="prepage" v-on:click="Prepages($event)">
+				      <a aria-label="Previous">
+				        <span aria-hidden="true">&laquo;</span>前一页
+				      </a>
+				    </li>
+				    <template v-for="pages in Math.ceil(equipmentlist.length/size)" v-if="howmany == 0 && equipmentlist.length >= size">
+				    <li v-if="pages == 1" class="active" v-on:click="Numpage(pages,$event)"><a>{{pages}}</a></li>
+				    <li v-else v-on:click="Numpage(pages,$event)"><a>{{pages}}</a></li>
+				    <li v-if="pages == Math.ceil(equipmentlist.length/size)" id="nextpage" v-on:click="Nextpages($event)">
+				      <a aria-label="Next">
+				        后一页<span aria-hidden="true">&raquo;</span>
+				      </a>
+				    </li>
+				    </template>
+				    <template v-for="pages in Math.ceil(searchlist.length/size)" v-if="howmany != 0 && searchlist.length >= size">
+				    <li v-if="pages == 1" class="active"><a v-on:click="Numpage(pages,$event)">{{pages}}</a></li>
+				    <li v-else><a v-on:click="Numpage(pages,$event)">{{pages}}</a></li>
+				    <li v-if="pages == Math.ceil(searchlist.length/size)" id="nextpage" v-on:click="Nextpages($event)">
+				      <a aria-label="Next">
+				        后一页<span aria-hidden="true">&raquo;</span>
+				      </a>
+				    </li>
+				    </template>
+				    
+				  </ul>
+				</nav>
+				</div>
+				</div>
+			</div>
+			</div><!-- 器材列表 -->
+			</div>
+			
+			<div role="tabpanel" class="tab-pane" id="orderslists">
+			<div class="col-md-12" v-if="state >= 1"><!-- 订单列表 -->
+				<div class="panel panel-primary" v-if="state > 1">
+				<div class="panel-heading">订单列表<button class="btn btn-default pull-right btn-xs" v-on:click="Getorders($event)">刷新</button></div>
+				<div class="panel-body">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>订单编号</th>
+								<th>器材编号</th>
+								<th>器材名称</th>
+								<th>器材租金</th>
+								<th>租借数量</th>
+								<th>租借时间</th>
+								<th>归还时间</th>
+								<th>租借用户</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody>
+							<template v-for="(orders,index) in order">
+								<tr>
+									<td>{{orders.orders_id}}</td>
+									<td>{{orders.equip_id}}</td>
+									<td>{{orders.equip_name}}</td>
+									<td>{{orders.equip_price}}元</td>
+									<td>{{orders.equip_num}}</td>
+									<td>{{orders.orders_renttime}}</td>
+									<td>{{orders.orders_backtime}}</td>
+									<td>{{orders.user_name}}</td>
+									<td v-if="orders.orders_state == 1"><a class="btn btn-primary disabled">租借中</a></td>
+									<td v-if="orders.orders_state == 2"><a class="btn btn-default disabled">预约中</a></td>
+									<td v-if="orders.orders_state == 3"><a class="btn btn-info disabled">已取消</a></td>
+									<td v-if="orders.orders_state == 4"><a class="btn btn-warning disabled">审核中</a></td>
+									<td v-if="orders.orders_state == 5"><a class="btn btn-success disabled">已归还</a></td>
+									<td v-if="orders.orders_state == 6"><a class="btn btn-danger disabled">已破损</a></td>
+								</tr>
+							</template>
+						</tbody>
+					</table>
+				</div>
+				</div>
+			</div><!-- 订单列表 -->
+			</div>
+			
+			<!-- {orders_id:1, equip_id:2, equip_name:"足球", equip_price:10, equip_num:1, equip_backtime:1561707665649, equip_renttime:1561448465649, user_name:"老谢", user_id:3, orders_state:1} -->
+			<div role="tabpanel" class="tab-pane" id="checkorders">
+			<div class="col-md-12" v-if="state > 1"><!-- 审查列表 -->
+				<div class="panel panel-primary">
+				<div class="panel-heading">审查列表<button class="btn btn-default pull-right btn-xs" v-on:click="Getchecklist($event)">刷新</button></div>
+				<div class="panel-body">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>订单编号</th>
+								<th>器材编号</th>
+								<th>器材名称</th>
+								<th>器材租金</th>
+								<th>租借数量</th>
+								<th>租借时间</th>
+								<th>归还时间</th>
+								<th>租借用户</th>
+								<th>器材状态</th>
+							</tr>
+						</thead>
+						<tbody>
+							<template v-for="(orders,index) in checklist">
+								<tr>
+									<td>{{orders.orders_id}}</td>
+									<td>{{orders.equip_id}}</td>
+									<td>{{orders.equip_name}}</td>
+									<td>{{orders.equip_price}}元</td>
+									<td>{{orders.equip_num}}</td>
+									<td>{{orders.orders_renttime}}</td>
+									<td>{{orders.orders_backtime}}</td>
+									<td>{{orders.user_name}}</td>
+									<td>
+									<button class="btn btn-default btn-success" v-on:click="Checkorders(index,5,$event)">正常</button>
+									<button class="btn btn-default btn-danger" v-on:click="Checkorders(index,6,$event)">损坏</button>
+									</td>
+								</tr>
+							</template>
+						</tbody>
+					</table>
+					<!-- <div class="pull-right">
+					<nav aria-label="Page navigation">
+					  <ul class="pagination" id="hahaa">
+					    <li class="hide" id="prepage" v-on:click="Prepages($event)">
+					      <a aria-label="Previous">
+					        <span aria-hidden="true">&laquo;</span>前一页
+					      </a>
+					    </li>
+					    <template v-for="pages in Math.ceil(checklist.length/size)" v-if="howmany == 0 && checklist.length >= size">
+					    <li v-if="pages == 1" class="active" v-on:click="Numpage(pages,$event)"><a>{{pages}}</a></li>
+					    <li v-else v-on:click="Numpage(pages,$event)"><a>{{pages}}</a></li>
+					    <li v-if="pages == Math.ceil(checklist.length/size)" id="nextpage" v-on:click="Nextpages($event)">
+					      <a aria-label="Next">
+					        后一页<span aria-hidden="true">&raquo;</span>
+					      </a>
+					    </li>
+					    </template>
+					  </ul>
+					</nav>
+					</div> -->
+				</div>
+				</div>
+			</div><!-- 审查列表 -->
+			</div>
+			</div>
+		</div><!-- 标签栏 -->
+		
+		<div>
+			<!-- 修改或添加 -->
+			<div class="modal fade" id="addorcorrect" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			  <div class="modal-dialog modal-lg" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			        <h4 v-if="addorcorrect == 1" class="modal-title">修改器材</h4>
+			        <h4 v-if="addorcorrect == 2" class="modal-title">添加器材</h4>
+			      </div>
+			      <div class="modal-body">
+			        <div>
+			        	<table class="table table-striped">
+							<thead>
+								<tr>
+									<th v-if="addorcorrect  == 1">器材编号</th>
+									<th>器材名称</th>
+									<th v-if="addorcorrect  == 1">器材余量</th>
+									<th>器材租金</th>
+									<th>器材金额</th>
+									<th>器材总量</th>
+									<th v-if="addorcorrect  == 1">已借走</th>
+									<th v-if="addorcorrect  == 1">已预约</th>
+									<th v-if="addorcorrect  == 1">已损坏</th>
+									<th v-if="addorcorrect  == 1">修改信息</th>
+									<th v-if="addorcorrect  == 1">删除器材</th>
+									<th v-if="addorcorrect  == 2">添加</th>
+								</tr>
+							</thead>
+							<tbody>
+								<template v-for="(temp,index) in tempaddorcorrect">
+									<tr>
+										<td v-if="addorcorrect  == 1">{{temp.equip_id}}</td>
+										<td v-if="addorcorrect  == 1">{{temp.equip_name}}</td>
+										<td v-if="addorcorrect  == 2"><input style="width: 60px" type="text" class="form-control" v-model="temp.equip_name"/></td>
+										<td v-if="addorcorrect  == 1"><input style="width: 60px" type="text" class="form-control" v-model="temp.equip_last"/></td>
+										<td><input style="width: 60px" type="text" class="form-control" v-model="temp.equip_price"/></td>
+										<td><input style="width: 60px" type="text" class="form-control" v-model="temp.equip_value"/></td>
+										<td><input style="width: 60px" type="text" class="form-control" v-model="temp.equip_sum"/></td>
+										<td v-if="addorcorrect  == 1"><input style="width: 60px" type="text" class="form-control" v-model="temp.equip_rent"/></td>
+										<td v-if="addorcorrect  == 1"><input style="width: 60px" type="text" class="form-control" v-model="temp.equip_book"/></td>
+										<td v-if="addorcorrect  == 1"><input style="width: 60px" type="text" class="form-control" v-model="temp.equip_damage"/></td>
+										<td v-if="addorcorrect  == 1"><button class="btn btn-default btn-warning" v-on:click="Sendupdate($event)">修改</button></td>
+										<td v-if="addorcorrect  == 1"><button class="btn btn-default btn-danger" v-on:click="Deleteequipment($event)">删除</button></td>
+										<td v-if="addorcorrect  == 2"><button class="btn btn-default btn-primary" v-on:click="Sendadd($event)">添加</button></td>
+									</tr>
+								</template>
+							</tbody>
+						</table>
+			        </div>
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-default" data-dismiss="modal">取消 </button>
+			      </div>
+			    </div>
+			  </div>
+			</div><!-- 修改 -->
+		</div><!-- 弹出框 -->
+		<hr>
+		<footer>
+		<div>
+			<p>广东海洋大学体育馆管理系统 | @吃瓜宇</p>
+		</div>
+  		</footer>
+  	</div><!-- 器材管理系统中间 -->
+  	</div>
+  	
+	<!-- <script src="js/cookie.js"></script> -->
+  	<script>
+  		var data = {
+	  			equipmentlist:[
+	  			/*{equip_id:1, equip_name:"篮球", equip_value:180, equip_price:15, equip_sum:30, equip_last:28, equip_state:1,equip_rent:0,equip_book:0,equip_damage:0},
+	  			{equip_id:2, equip_name:"足球", equip_value:100, equip_price:10, equip_sum:35, equip_last:35, equip_state:1,equip_rent:0,equip_book:0,equip_damage:0},
+	  			{equip_id:3, equip_name:"乒乓球", equip_value:3, equip_price:1, equip_sum:150, equip_last:150, equip_state:1,equip_rent:0,equip_book:0,equip_damage:0},
+	  			{equip_id:4, equip_name:"乒乓球拍", equip_value:10, equip_price:5, equip_sum:300, equip_last:300, equip_state:1,equip_rent:0,equip_book:0,equip_damage:0},
+	  			{equip_id:5, equip_name:"羽毛球", equip_value:5, equip_price:2, equip_sum:100, equip_last:100, equip_state:1,equip_rent:0,equip_book:0,equip_damage:0},
+	  			{equip_id:6, equip_name:"羽毛球拍", equip_value:30, equip_price:10, equip_sum:75, equip_last:75, equip_state:1,equip_rent:0,equip_book:0,equip_damage:0}*/
+	  			],
+	  			page:1,//当前页数
+	  			size:5,//每页最大值
+	  			ordertype:1,//归还或取消预约，1为归还，2为取消预约
+	  			state:1,//用户登陆状态，0为未登陆，1为登陆
+	  			username:"haha",
+	  			userid:[],
+	  			tempaddorcorrect:[],
+	  			bookNum:3,
+	  			templist:[],
+	  			addorcorrect:1,
+	  			currtime:"",
+	  			searchlist:[
+	  			{Id:001 , Name:'乒乓球' , Last:5 , Price:3},
+	  			],
+	  			howmany:0,
+	  			order:[
+	  			/* {orders_id:1, equip_id:2, equip_name:"足球", equip_price:10, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"老谢", user_id:3, orders_state:1},
+	  			{orders_id:2, equip_id:5, equip_name:"羽毛球", equip_price:2, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"老黄", user_id:5, orders_state:1},
+	  			{orders_id:3, equip_id:3, equip_name:"乒乓球", equip_price:1, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"梁其健", user_id:7, orders_state:2},
+	  			{orders_id:3, equip_id:4, equip_name:"乒乓球拍", equip_price:5, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"梁其健", user_id:7, orders_state:2},
+	  			{orders_id:4, equip_id:3, equip_name:"乒乓球", equip_price:1, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"耶路·马伦", user_id:6, orders_state:1},
+	  			{orders_id:4, equip_id:5, equip_name:"羽毛球", equip_price:2, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"耶路·马伦", user_id:6, orders_state:1},
+	  			{orders_id:5, equip_id:2, equip_name:"足球", equip_price:10, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"老陈", user_id:2, orders_state:1},
+	  			{orders_id:5, equip_id:3, equip_name:"乒乓球", equip_price:1, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"老陈", user_id:2, orders_state:1} */
+	  			],
+	  			checklist:[
+	  			/*{orders_id:1, equip_id:2, equip_name:"足球", equip_price:10, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"老谢", user_id:3, orders_state:1},
+	  			{orders_id:2, equip_id:5, equip_name:"羽毛球", equip_price:2, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"老黄", user_id:5, orders_state:1},
+	  			{orders_id:4, equip_id:3, equip_name:"乒乓球", equip_price:1, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"耶路·马伦", user_id:6, orders_state:1},
+	  			{orders_id:4, equip_id:5, equip_name:"羽毛球", equip_price:2, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"耶路·马伦", user_id:6, orders_state:1},
+	  			{orders_id:5, equip_id:2, equip_name:"足球", equip_price:10, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"老陈", user_id:2, orders_state:1},
+	  			{orders_id:5, equip_id:3, equip_name:"乒乓球", equip_price:1, equip_num:1, equip_backtime:"2019-06-26 10:19:47", equip_renttime:"2019-06-26 08:19:47", user_name:"老陈", user_id:2, orders_state:1}*/
+	  			],
+	  		};
+  		var vue = new Vue({
+  			el: '#qcgl',
+  			data:data,
+  			created:function(){
+  				console.log("创建网页！");
+  				axios
+  					.get('http://localhost:8080/GMS/equipment/gmfindallequipment.do')
+  					.then((res)=>{
+  						this.equipmentlist = res.data;
+  						console.log(res.data);
+  					})
+  					.catch((err)=>{
+  						console.log("请求失败！");
+  					})
+  				this.getCookieFr();
+  			},
+  			methods:{
+  				getCookieFr(){
+  					var cookieStr='';
+  					cookieStr = this.$getCookie('UName');
+  					console.log(cookieStr);
+  					if(cookieStr != null){
+  						this.userid = cookieStr[0];
+  						this.username = cookieStr[1];
+  						this.state = cookieStr[2];
+  					}else{
+  						this.state = 0;
+  					}
+  					this.user_id = this.userid;
+  				},
+  				Search:function(event){ 					
+  					this.howmany = this.searchlist.length;
+  					console.log(this.howmany);
+  				},
+  				Numpage:function(pages){
+  					console.log(pages);
+  					if(this.page == pages){
+  						return;
+  					}
+  					this.page = pages;
+  					$("#hahaa li").removeClass("active")
+  					if (event.target.tagName.toUpperCase() == "LI") {
+                    	$(event.target).addClass("active");
+	                }
+	                else {
+	                    $(event.target).parent().addClass("active");
+	                }
+	                if(this.page == 1){
+	                	$("#prepage").addClass("hide");
+	                }else{
+	                	$("#prepage").removeClass("hide");
+	                }
+	                console.log(Math.ceil(this.equipmentlist.length/this.size));
+	                if(this.howmany == 0){
+	                	if(this.page == Math.ceil(this.equipmentlist.length/this.size)){
+	                		$("#nextpage").addClass("hide");
+		                }else{
+		                	$("#nextpage").removeClass("hide");
+		                	}
+	                }else{
+	                	if (this.page == Math.ceil(this.searchlist.length/this.size)) {
+	                		$("#nextpage").addClass("hide");
+		                }else{
+		                	$("#nextpage").removeClass("hide");
+	                	}
+	                }
+  				},
+  				Prepages:function(event){
+  					$("#hahaa .active").prev().trigger("click");
+  				},
+  				Nextpages:function(event){
+  					$("#hahaa .active").next().trigger("click");
+  				},
+  				//打开修改器材表单
+  				Correquip:function(index){
+  					this.tempaddorcorrect = [];
+  					this.tempaddorcorrect.push(this.equipmentlist[index]);
+  					this.addorcorrect = 1;
+  					$("#addorcorrect").modal("toggle");
+  				},
+  				//检测有无
+  				/*Nobookorders:function(index){
+  					this.temporder = [];
+  					this.temporder.push(this.order[index]);
+  					this.ordertype = 2;
+  					$("#orders").modal("toggle");
+  				},*/
+  				//从搜索列表返回器材列表
+  				Back:function(event){
+  					this.howmany = 0;
+  				},
+  				//获得当前时间
+  				Gettime:function(event){
+  					var date = new Date();
+  					this.currtime = date.getFullYear() + "/" + (date.getMonth()+1) + "/" + date.getDate();
+  				},
+  				//打开添加器材表单
+  				Openadd:function(event){
+  					this.addorcorrect = 2;
+  					var tempaddlist = [{equip_name:"",equip_price:"",equip_value:"",equip_sum:""}];
+  					this.tempaddorcorrect = [];
+  					this.tempaddorcorrect.push(tempaddlist[0]);
+  					console.log(this.tempaddorcorrect);
+  					$("#addorcorrect").modal("show");
+  				},
+  				Sendadd:function(){
+  					console.log(this.tempaddorcorrect[0]);
+  					if(this.tempaddorcorrect[0].equip_name == 0){
+  						window.alert("器材名称不能为空！");
+  						return;	
+  					}else if(this.tempaddorcorrect[0].equip_price == 0){
+  						window.alert("器材租金不能为空！");
+  						return;
+  					}else if(this.tempaddorcorrect[0].equip_value == 0){
+  						window.alert("器材价格不能为空！");
+  						return;
+  					}else if(this.tempaddorcorrect[0].equip_sum == 0){
+  						window.alert("器材总量不能为空！");
+  						return;
+  					}
+  					axios({
+  						method:'post',
+  						url:'http://localhost:8080/GMS/equipment/gmaddequipment.do',
+  						data:Qs.stringify(this.tempaddorcorrect[0]),
+  						headers:{
+  							'Content-Tpye':'application/json;charset=UTF-8;charset=UTF-8',
+  							'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+  						},
+  					}).then((res)=>{
+  						console.log(res.data);
+  						this.Getequip();
+  						$("#addorcorrect").modal("hide");
+  						window.alert("添加成功！");
+  					}).catch(err=>{
+  						console.log("err");
+  						window.alert("添加失败！");
+  					})
+  				},
+  				Sendupdate:function(){
+  					console.log(this.tempaddorcorrect);
+  					axios({
+  						method:'post',
+  						url:'http://localhost:8080/GMS/equipment/gmupdateequipment.do',
+  						data:Qs.stringify(this.tempaddorcorrect[0]),
+  						headers:{
+  							'Content-Tpye':'application/json;charset=UTF-8;charset=UTF-8',
+  							'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+  						},
+  					}).then((res)=>{
+  						console.log(res.data);
+  						this.Getequip();
+  						$("#addorcorrect").modal("hide");
+  						window.alert("修改成功！");
+  					}).catch(err=>{
+  						console.log("err");
+  						window.alert("修改失败！");
+  					})
+  				},
+  				Getequip:function(event){
+	  				axios
+	  					.get('http://localhost:8080/GMS/equipment/gmfindallequipment.do')
+	  					.then((res)=>{
+	  						this.equipmentlist = res.data;
+	  						console.log(res.data);
+	  					})
+	  					.catch((err)=>{
+	  						console.log("请求失败！");
+	  					})
+	  			},
+	  			firstGetchecklist:function(event){
+	  				if(this.checklist.length != 0){
+	  					return;
+	  				}
+	  				this.Getchecklist();
+	  			},
+  				//得到订单列表
+  				Getchecklist:function(event){
+  					axios
+  						.get('http://localhost:8080/GMS/ordersview/gmgetchecklist.do')
+  						.then((res)=>{
+  							this.checklist = res.data;
+  							for(let i=0;i<this.checklist.length;i++){
+		  						this.checklist[i].orders_renttime = moment(this.checklist[i].orders_renttime).utcOffset(480).format('YYYY-MM-DD HH:mm:ss');
+		  						this.checklist[i].orders_backtime = moment(this.checklist[i].orders_backtime).utcOffset(480).format('YYYY-MM-DD HH:mm:ss');
+		  					}
+  						})
+  						.catch((err)=>{
+  							console.log("请求出错！");
+  						})
+  				},
+  				firstGetorders:function(event){
+	  				if(this.order.length != 0){
+	  					return;
+	  				}
+	  				this.Getorders();
+	  			},
+  				Getorders:function(event){
+  					axios
+  						.get('http://localhost:8080/GMS/ordersview/findallOrders.do')
+  						.then((res)=>{
+  							this.order = res.data;
+  							for(let i=0;i<this.order.length;i++){
+		  						this.order[i].orders_renttime = moment(this.order[i].orders_renttime).utcOffset(480).format('YYYY-MM-DD HH:mm:ss');
+		  						this.order[i].orders_backtime = moment(this.order[i].orders_backtime).utcOffset(480).format('YYYY-MM-DD HH:mm:ss');
+		  					}
+  						})
+  						.catch((err)=>{
+  							console.log("请求出错！");
+  						})
+  				},
+  				Deleteequipment:function(event){
+  					axios({
+  						method:'post',
+  						url:'http://localhost:8080/GMS/equipment/gmdeleteequipment.do',
+  						data:Qs.stringify({
+  							"equip_id":this.tempaddorcorrect[0].equip_id
+  						}),
+  						headers:{
+  							'Content-Tpye':'application/json;charset=UTF-8;charset=UTF-8',
+  							'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+  						},
+  					}).then((res)=>{
+  						console.log(res.data);
+  					}).catch((err)=>{
+  						console("err");
+  					})
+  				},
+  				Checkorders:function(index,state){
+  					console.log({
+  							"orders_id":this.checklist[index].orders_id,
+  							"orders_state":state
+  						});
+  					axios({
+  						method:'post',
+  						url:'http://localhost:8080/GMS/ordercreate/gmcheckorders.do',
+  						data:Qs.stringify({
+  							"orders_id":this.checklist[index].orders_id,
+  							"orders_state":state
+  						}),
+  						headers:{
+  							'Content-Tpye':'application/json;charset=UTF-8;charset=UTF-8',
+  							'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+  						},
+  					}).then((res)=>{
+  						console.log(res.data);
+  						this.Getchecklist();
+  					}).catch((err)=>{
+  						console("err");
+  					})
+  				},
+  			},
+  		});		
+ 	</script>
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+    <script src="js/jquery.min.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>

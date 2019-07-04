@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gms.DAO.equip.IOrdersviewDAO">
+
+	<resultMap type="Ordersview" id="OrdersviewMap">
+		<id column="orders_id" property="orders_id"/>
+		<result column="equip_id" property="equip_id"/>
+		<result column="equip_name" property="equip_name"/>
+		<result column="equip_num" property="equip_num"/>
+		<result column="orders_renttime" property="orders_renttime"/>
+		<result column="UID" property="user_id"/>
+		<result column="UName" property="user_name"/>
+		<result column="orders_state" property="orders_state"/>
+	</resultMap>
+	
+	<!-- 管理员使用的查找全部订单 -->
+	<select id="findallOrders" resultMap="OrdersviewMap">
+		SELECT ordersdetail.orders_id, ordersdetail.equip_id, equipment.equip_name, equipment.equip_price,
+			ordersdetail.equip_num, ordersdetail.orders_renttime, ordersdetail.orders_backtime,`User`.UID,
+			`User`.UName, ordersdetail.orders_state
+		FROM equipment , ordersdetail , `User`
+		WHERE ordersdetail.equip_id = equipment.equip_id 
+		AND ordersdetail.user_id = `User`.UID 
+		ORDER BY ordersdetail.orders_id ASC
+	</select>
+	
+	<!-- 管理员获得审核列表 -->
+	<select id="gmgetchecklist" resultMap="OrdersviewMap">
+		SELECT ordersdetail.orders_id, ordersdetail.equip_id, equipment.equip_name, equipment.equip_price,
+			ordersdetail.equip_num, ordersdetail.orders_renttime, ordersdetail.orders_backtime, `User`.UID,
+			`User`.UName, ordersdetail.orders_state
+		FROM equipment , ordersdetail , `User` ,`check`
+		WHERE ordersdetail.equip_id = equipment.equip_id 
+		AND ordersdetail.user_id = `User`.UID 
+		AND `check`.orders_id = ordersdetail.orders_id
+		AND ordersdetail.orders_state = 4
+		ORDER BY `check`.check_id ASC
+	</select>
+	
+	<!-- 用户将器材添加到审查列表 -->
+	<insert id="addequiptochecklist" parameterType="Integer">
+		INSERT INTO `check` VALUES (NULL,#{orders_id},1)
+	</insert>
+	
+	<!-- 用户查看自己订单
+		标志位(orders_state)：1为租借器材，2为预约器材，3为已取消，4为审核中，5为正常归还，6为破损归还 -->
+	<select id="finduserOrders" parameterType="Integer" resultMap="OrdersviewMap">
+		SELECT ordersdetail.orders_id, ordersdetail.equip_id, equipment.equip_name, equipment.equip_price,
+			ordersdetail.equip_num, ordersdetail.orders_renttime, ordersdetail.orders_backtime, `User`.UID,
+			`User`.UName, ordersdetail.orders_state
+		FROM equipment , ordersdetail , `User`
+		WHERE ordersdetail.equip_id = equipment.equip_id 
+		AND ordersdetail.user_id = `User`.UID 
+		AND ordersdetail.user_id = #{user_id}
+		ORDER BY ordersdetail.orders_id ASC
+	</select>
+	
+	<!-- 查看审查列表是否有该订单 -->
+	<select id="getcheckidfromcheck" parameterType="Integer" resultType="Integer">
+		SELECT check_id FROM `check` WHERE orders_id = #{orders_id}
+	</select>
+	
+</mapper>

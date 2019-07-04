@@ -1,0 +1,728 @@
+<html lang="en" >
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>myGYMMS</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script type="text/javascript" src="js/myScript.js"></script>
+    <script type="text/javascript" src="js/qs.js"></script>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/modal.js"></script>
+    <script type="text/javascript" src="js/tab.js"></script>
+    <script type="text/javascript" src="js/dropdown.js"></script>
+    <script type="text/javascript" src="js/jquery-3.0.0.min.js"></script>
+    <!-- <script type="text/javascript" src="js/cookie.js"></script> -->
+    <script src="js/axios.min.js"></script>
+    <script src="js/vue.js"></script>
+    <script type="text/javascript">
+    
+        Vue.prototype.$getCookie = function getCookie(name) {;
+        var arr;
+    	//^n量词匹配任何开头为 n 的字符串。
+    	//n$ 量词匹配任何结尾为 n 的字符串。
+    	//n? 量词匹配任何包含零个或一个 n 的字符串。
+    	//n+ 量词匹配包含至少一个 n 的任何字符串
+    	//n* 量词匹配包含零个或多个 n 的任何字符串。
+        var reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+    	//unescape() 函数可对通过 escape() 编码的字符串进行解码。
+    	//match()匹配
+        if (arr = document.cookie.match(reg)){
+    	 var cookieString=unescape(arr[2]);
+    		if(cookieString.length!=0){
+    		 var cookies=cookieString.split(";");
+    		 return cookies;
+    		}
+        }
+        else
+            return null;
+    		document.cookie = name + "=" + escape(value);
+        }
+    
+    var apply=function(){
+    	if(loginUserManage==1)
+    		 $("#applyForm").attr('action',"/GMS/event/lauchImportantEvent.do"); 
+    	window.alert(loginUserManage+" "+$("#applyForm")+""+ $("#applyForm").attr('action'));
+    }
+    
+ 	// 添加响应拦截器
+    axios.interceptors.response.use((response)=>{
+        if(response.data.exception!=undefined)
+        	window.alert(response.data.exception);
+        return response;
+      }, function (error) {
+        // 对响应错误做点什么
+        return Promise.reject(error);
+      });
+    </script>
+</head>
+<body role="document" id="document">
+    <!-- 头部div -->
+    <div class="row  page-header" id="headRow">
+      <div class="row" id="headImgRow">
+      </div>
+      <div class="row">
+        <div class="navbar navbar-default" id="navRow">
+          <div class="container">
+            <div class="navbar-header">
+              <a class="navbar-brand" id="nav-font" href="event_welcome.html" >体育馆</a>
+            </div>
+            <div class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                <li class="dropdown">
+                  <a href="#" data-toggle="dropdown">
+                    <font id="nav-font">赛事</font><span class="caret" id="nav-font"></span>
+                  </a>
+                  <ul class="dropdown-menu" role="menu" aria-labelledby="eventTabDrop">
+                      <li><a href="event_welcome.html" tabindex="-1" >赛事</a></li>
+                      <li><a tabindex="-1" id="m" data-toggle="modal" data-target="#applicationModal" onclick="checkLogin(m)">赛事申请</a></li>
+                      <li><a tabindex="-1" onclick="toMyEvnet()">我的申请</a></li>
+                  </ul>
+                </li>
+                <li><a id="nav-font" href="/GMS/equip/qcgl.html">器材</a></li>
+                <li><a id="nav-font" href="/GMS/dist/field.html#/Home">场地</a></li>
+              </ul>
+              <button type="button" class="btn btn-lg btn-default" id="login-button" data-toggle="modal" data-target="#loginModal">消息</button>
+              <button id="visit-button" type="button" class="btn btn-lg btn-link" v-on:click="jumpToLogin">{{username}}</button>
+                  <!-- 申请表 -->
+                  <div class="modal fade" id="applicationModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                          <h4 class="modal-title" id="exampleModalLabel">申请表</h4>
+                        </div>
+                        <div class="modal-body">
+                          <form id="applyForm" role="form" class="form-horizontal" method="POST" action="/GMS/application/lauchEventApplication.do">
+                            <div class="form-group">
+                              <label class="control-label col-sm-2">带*为必填项</label><br>
+                            </div>
+                            
+                            <div class="form-group">
+                              <label for="" class="col-sm-2 control-label">
+                                申请人*</label>
+                              <div class="col-sm-8">
+                                <input type="text" class="form-control" name="username" readonly="readonly"/>
+                                <input type="hidden" name="userID">
+                              </div>
+                            </div>
+                            <div class="form-group">
+                              <label for="" class="col-sm-2 control-label">
+                                比赛内容*</label>
+                              <div class="col-sm-8">
+                                <input type="text" class="form-control" name="content" />
+                              </div>
+                            </div>
+                            <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">
+                              开始时间*</label>
+                            <div class="col-sm-8">
+                              <input type="text" class="form-control"  name="date"  v-bind:value="change.date"/>
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">
+                              结束时间*</label>
+                            <div class="col-sm-8">
+                              <input type="text" class="form-control"  name="endDate"  v-bind:value="change.endDate"/>
+                            </div>
+                          </div>
+                            <div class="form-group">
+                              <label for="" class="col-sm-2 control-label">
+                                裁判席</label>
+                              <div class="col-sm-8">
+                                <input type="text" class="form-control" name="judgement" />
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                              <input type="submit" class="btn btn-primary" value="提交并前往选择场地器材" onclick="apply()"></button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!--消息弹框-->
+                  <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;</button>
+                          <h4 class="modal-title" id="myModalLabel">
+                            消息</h4>
+                        </div>
+                        <div class="modal-body">
+                          <div id="inform">
+                      <div class="jumbotron" id="table-jumbotron">
+                          <table class="table table-striped text-center" id="table">
+                              <thead>
+                                <tr>
+                                  <th><center>#</center></th>
+                                  <th><center>消息</center></th>
+                                  <th><center>日期</center></th>
+                                  <th><center><a v-on:click="SortByState()">状态</a></center></th>
+                                  <th></th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                  <template v-for="(row, index) in rows ">
+                                      <tr v-if="index>=(curpage-1)*pagesize&&index<curpage*pagesize">
+                                          <td>{{row.informID}}</td>
+                                          <td>{{row.content}}</td>
+                                          <td>{{row.date}}</td>
+                                          <td>{{row.state==1?"已查看":"未读"}}</td>
+                                          <td style="width: 140px;">
+                                            <button type="button" class="btn btn-default" v-on:click="drop(row.informID,index)">删除</button>
+                                            <button type="button" class="btn btn-default" v-show="row.state==0" v-on:click="confirm(row.informID,index)">已读</button>                                          	
+                                          </td>
+                                      </tr>
+                                  </template>
+                              </tbody>
+                          </table>
+                          <center>
+                            <nav>
+                                <ul class="pagination pagination-lg">
+                                    <template v-for="page in Math.ceil(rows.length/pagesize)">
+                                        <li  id="prepage" v-if="page==1" class="disabled" v-on:click="PrePage()">
+                                          <a href="javascript:void(0)">上一页</a>
+                                        </li>
+                                        <li v-if="page==1" class="active" v-on:click="NumPage(page, $event)">
+                                          <a href="javascript:void(0)">{{page}}</a>
+                                        </li>
+                                        <li v-else v-on:click="NumPage(page, $event)">
+                                          <a href="javascript:void(0)">{{page}}</a>
+                                        </li>
+                                        <li id="nextpage" v-if="page==Math.ceil(rows.length/pagesize)" v-on:click="NextPage()">
+                                          <a href="javascript:void(0)">下一页</a>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </nav>
+                          </center>
+                      </div>
+                  </div>
+                </div>
+              </div>
+              </div>
+              </div>
+            </div><!--/.nav-collapse -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 主体div -->
+    <div class="container theme-showcase" id="container-div" role="main">
+      <div class="row " id="mainRow">
+        <!-- 公告 -->
+        <div class="row" id="broadcast" >
+          <div class="col-md-1">
+            <h3>公告</h3>
+          </div>
+          <div class="jumbotron col-md-11" id="broadcast-jumbotron" style="margin-top: 3.5px;">
+            <center>
+                <div id="box">
+                    <ul :class="{anim:animate==true}" style="margin-top: 5px;margin-bottom: 5px;">
+                        <p style="font-size: 15px;margin-bottom: 0px;">{{item}}</p>
+                    </ul>
+                </div>
+            </center>
+          </div>
+        </div>
+        <!-- 轮播图 -->
+        <div id="tab-head">
+        </div>
+        <div class="row" id="broadcast" >
+          <div class="jumbotron" id="broadcast-jumbotron">
+            <center>
+              <!-- 轮播中的第一张图 -->
+              <div class="banner" id="banner">
+                <a href="#" class="banner-a">
+                    <div class="banner-slide slide1" style="background-image: url('images/1.jpg')">
+                    </div>
+                </a>
+                <!-- 轮播中的第二张图 -->
+                <a href="#"class="banner-a">
+                    <div class="banner-slide slide2" style="background-image: url('images/2.jpg')">
+                    </div>
+                </a>
+                <!-- 轮播中的第三张图 -->
+                <a href="#"class="banner-a">
+                    <div class="banner-slide slide3" style="background-image: url('images/3.jpg')">
+                    </div>
+                </a>
+                <!-- 轮播中的第四张图 -->
+                <a href="#"class="banner-a">
+                    <div class="banner-slide slide4" style="background-image: url('images/4.jpg')">
+                    </div>
+                </a>
+                <!-- 轮播中的第五张图 -->
+                <a href="#"class="banner-a">
+                    <div class="banner-slide slide5" style="background-image: url('images/5.jpg')">
+                    </div>
+                </a>
+              </div>
+            </center>
+          </div>
+        </div>
+        <!-- 信息板块 -->
+        <div class="page-header" id="tab-head">
+          <h1>赛事信息</h1>
+        </div>
+        <!-- 列表 -->
+        <div id="app">
+            <div class="jumbotron" id="table-jumbotron">
+              <table class="table table-striped text-center" id="table">
+                    <thead>
+                      <tr>
+                        <th><center>#</center></th>
+                        <th><center>比赛</center></th>
+                        <th><center>赛事时间</center></th>
+                        <th><center>场地</center></th>
+                        <th><center>裁判</center></th>
+                        <th><center><a v-on:click="SortByState()">状态</a></center></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        <template v-for="(row, index) in rows ">
+                            <tr v-if="index>=(curpage-1)*pagesize&&index<curpage*pagesize">
+                                <td>{{row.eventID}}</td>
+                                <td>{{row.content}}</td>
+                                <td>{{row.date}}~{{row.endDate}}</td>
+                                <td>{{row.filed}}</td>
+                                <td>{{row.judgement}}</td>
+                                <td>{{row.state==0?"即将开始":(row.state==2?"结束":"进行中")}}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+              </table>
+                <center>
+                  <nav>
+                      <ul class="pagination pagination-lg">
+                          <template v-for="page in Math.ceil(rows.length/pagesize)">
+                              <li v-on:click="PrePage()" id="prepage" v-if="page==1" class="disabled">
+                                <a href="javascript:void(0)">上一页</a>
+                              </li>
+                              <li v-if="page==1" class="active" v-on:click="NumPage(page, $event)">
+                                <a href="javascript:void(0)">{{page}}</a>
+                              </li>
+                              <li v-else v-on:click="NumPage(page, $event)">
+                                <a href="javascript:void(0)">{{page}}</a>
+                              </li>
+                              <li id="nextpage" v-on:click="NextPage()" v-if="page==Math.ceil(rows.length/pagesize)">
+                                <a href="javascript:void(0)">下一页</a>
+                              </li>
+                          </template>
+                      </ul>
+                  </nav>
+                </center>
+            </div>
+        </div>
+      <!-- 底部div -->
+      <div class="page-header"></div>
+      <div class="row page-header" id="footRow">
+        <!-- 跳转栏目 -->
+        <div class="row page-header" id="colRow">
+          <div class="col-md-4 jumpLink">
+            <div class="list-group">
+              <span href="#" class="list-group-item" id="list-group-span">
+                <h4 class="list-group-item-heading">模块跳转</h4>
+              </span>
+              <a href="event_welcome.html" class="list-group-item">
+                <h4 class="list-group-item-heading">赛事</h4>
+                <p class="list-group-item-text">前往赛事模块</p>
+              </a>
+              <a href="/GMS/dist/field.html#/Home" class="list-group-item">
+                <h4 class="list-group-item-heading">场地</h4>
+                <p class="list-group-item-text">前往场地模块</p>
+              </a>
+              <a href="/GMS/equip/qcgl.html" class="list-group-item">
+                <h4 class="list-group-item-heading">器材</h4>
+                <p class="list-group-item-text">前往器材模块</p>
+              </a>
+            </div>
+          </div>
+          <div class="col-md-4 description">
+            <div class="list-group">
+              <span href="#" class="list-group-item" id="list-group-span">
+                <h4 class="list-group-item-heading">赛事信息</h4>
+              </span>
+              <a href="event_welcome.html" class="list-group-item">
+                <h4 class="list-group-item-heading">公布的赛事</h4>
+                <p class="list-group-item-text"></p>
+              </a>
+              <a onclick="toMyEvnet()" href="javascript:void(0)" class="list-group-item">
+                <h4 class="list-group-item-heading">我的赛事</h4>
+                <p class="list-group-item-text"></p>
+              </a>
+            </div>
+          </div>
+          <div class="col-md-4 personal">
+            <div class="list-group">
+              <span href="#" class="list-group-item" id="list-group-span">
+                <h4 class="list-group-item-heading">个人中心</h4>
+                <p class="list-group-item-text"></p>
+              </span>
+              <a href="#" class="list-group-item">
+                <h4 class="list-group-item-heading">我的收藏</h4>
+                <p class="list-group-item-text"></p>
+              </a>
+              <a href="#" class="list-group-item">
+                <h4 class="list-group-item-heading">我的预约</h4>
+                <p class="list-group-item-text"></p>
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- 声明 -->
+        <div class="row ">
+          <div class="col-md-4"></div>
+          <div class="col-md-4" id="authority">
+            <center><font>广东海洋大学体育馆管理系统</font></center>
+            <center><font>版权:@Chuck_Lin</font></center>
+          </div>
+          <div class="col-md-4"></div>
+        </div>
+      </div>
+    </div> <!-- /container -->
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript">
+    var loginUserName='';
+    var loginUserID='';
+    var loginUserManage;
+    var loginUri="";
+    var personalInformUri=""
+      //数组比较
+    var compare = function (prop) {
+        return function (obj1, obj2) {
+            var val1 = obj1[prop];
+            var val2 = obj2[prop];if (val1 < val2) {
+                return -1;
+            } else if (val1 > val2) {
+                return 1;
+            } else {
+                return 0;
+            }            
+        } 
+    }
+    var toMyEvnet=function(){
+    	if(!ifLogin())
+    		return false;
+    	if(loginUserManage==1)
+    		window.location.href="event_manager_application.html";
+    	else
+    		window.location.href="event_visitor_apply.html";
+    }
+
+    var ifLogin=function(){
+    	if(loginUserID==null){
+    		window.alert("请登录");
+			return false;    		
+    	}
+    	return true;
+    }
+    
+    //取消modal
+    var checkLogin=function(prop){
+    	if(loginUserID==null){
+    		window.alert("请登录");
+    		$(prop).attr("data-target","");
+    	}
+    }
+    
+    var login=new Vue({
+      el:"#visit-button",
+      data:{
+        username:loginUserName
+      },
+      created() {
+            this.readCookie();
+        },
+        methods: {
+          jumpToLogin(){
+               window.location.href="/GMS/user/home.html";
+          },
+            submitForm(formName) {
+                 const  _this = this;
+                //判断复选框是否被勾选 勾选则调用配置cookie方法
+                if (_this.checked == true) {
+                    console.log("checked == true");
+                    //传入账号名，密码，和保存天数3个参数
+                    _this.setCookie(_this.ruleForm.username, _this.ruleForm.password, 7);
+                }else {
+                  console.log("清空Cookie");
+                  //清空Cookie
+                  _this.clearCookie();
+                }
+
+                //与后端请求代码，本功能不需要与后台交互所以省略
+
+                console.log("登陆成功");
+            },
+            readCookie:function(){
+       		 var cookieString = this.$getCookie('UName');
+     		 console.log(cookieString);
+       		 if (cookieString!=null){
+       			loginUserName=cookieString[1];
+       		    loginUserID=cookieString[0];
+       		    loginUserManage=(parseInt(cookieString[2])-1);
+       		 	this.username=loginUserName;
+       		 }else{
+       			 alert('没有cookie');
+       		 }
+      		},
+            //清除cookie
+            clearCookie: function() {
+                this.setCookie("", "", -1); //修改2值都为空，天数为负1天就好了
+            }
+        }
+    });
+
+  /**
+    设置申请表中申请人input值
+  */
+    $(function(){
+
+      $("input[name='username']").val(loginUserName);
+      $("input[name='userID']").val(loginUserID);
+
+   });
+        // 信息表单
+    var inform = new Vue({
+        el: '#inform',
+        data:{
+        	pagesize: 8,
+            curpage:1,
+        	rows:[{
+        		informID: '', 
+        		content: '',
+        		date:'',
+        		state:''
+        	}]
+        },
+        mounted(){
+         	this.GetInform();
+        },
+        methods: {
+            GetInform:function(){
+              axios.get('/GMS/inform/getMyEventInform.do', {
+                params: {
+                  userID:loginUserID
+                }
+              })
+              .then((response)=>{
+                this.rows=response.data;
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+            },
+            drop:function(prop,index){
+                axios({
+                	method:'post',
+                	url:'/GMS/inform/dropEventInform.do',
+                	data:Qs.stringify({
+                		userID:loginUserID,
+                        informID:prop
+                    }),
+                	headers: {
+                		'content-type': 'application/json;charset=utf-8',
+                		'content-type': 'application/x-www-form-urlencoded;charset=utf-8'}
+              }).then((response)=>{
+        		   this.rows.splice(index,1);
+          	 }) 
+              .catch(function (error) {
+                console.log(error);
+              });
+            },
+            confirm:function(prop,index){
+            	axios.get('/GMS/inform/confirmEventInform.do', {
+                    params: {
+                    	informID:prop
+                    }
+                  })
+                   .then((response)=>{
+                	   this.rows[index].state=1;
+                  }) 
+                  .catch(function (error) {
+                    console.log(error);
+                  });
+            },
+            SortByState:function(){
+                this.rows.sort(compare('state'));
+            },
+            //上一页方法
+            PrePage: function (event) {
+                $(".pagination .active").prev().trigger("click");
+            },
+            //下一页方法
+            NextPage: function (event) {
+                $(".pagination .active").next().trigger("click");
+            },
+            //点击页码的方法
+            NumPage: function (num, event) {
+                if (this.curpage == num) {
+                    return;
+                }
+                this.curpage = num;
+                $(".pagination li").removeClass("active");
+                if (event.target.tagName.toUpperCase() == "LI") {
+                    $(event.target).addClass("active");
+                }
+                else {
+                    $(event.target).parent().addClass("active");
+                }
+                if (this.curpage == 1) {
+                    $("#prepage").addClass("disabled");
+                }
+                else {
+                    $("#prepage").removeClass("disabled");
+                }
+                if (this.curpage == Math.ceil(this.rows.length / this.pagesize)) {
+                    $("#nextpage").addClass("disabled");
+                }
+                else {
+                    $("#nextpage").removeClass("disabled");
+                }
+            }
+        }
+    });
+
+    // 赛事信息表单
+    var app = new Vue({
+        el: '#app',
+        data: {
+    		  pagesize: 8,
+	        curpage:1,
+      	  rows:[{
+      		eventID :'',
+      		content :'',
+      		date :'',
+          endDate:'',
+      		fieldID :'',
+      		filed:'',
+      		equipmentID:'',
+      		judgement :'',
+      		state :''
+      	  }]
+        },
+        created(){
+         this.GetEvents();
+         console.log(this.rows);
+        },
+        methods: {
+          GetEvents:function(){
+            axios.get('/GMS/event/getAllEvent.do', {
+              params: {
+              }
+            })
+            .then((response)=>{
+              this.rows=response.data;
+              console.log(this.rows);
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+          },
+
+          SortByState:function(){
+            this.rows.sort(compare('state'));
+          },
+            //上一页方法
+            PrePage: function (event) {
+                $(".pagination .active").prev().trigger("click");
+            },
+            //下一页方法
+            NextPage: function (event) {
+                $(".pagination .active").next().trigger("click");
+            },
+            //点击页码的方法
+            NumPage: function (num, event) {
+                if (this.curpage == num) {
+                    return;
+                }
+                this.curpage = num;
+                $(".pagination li").removeClass("active");
+                if (event.target.tagName.toUpperCase() == "LI") {
+                    $(event.target).addClass("active");
+                }
+                else {
+                    $(event.target).parent().addClass("active");
+                }
+                if (this.curpage == 1) {
+                    $("#prepage").addClass("disabled");
+                }
+                else {
+                    $("#prepage").removeClass("disabled");
+                }
+                if (this.curpage == Math.ceil(this.rows.length / this.pagesize)) {
+                    $("#nextpage").addClass("disabled");
+                }
+                else {
+                    $("#nextpage").removeClass("disabled");
+                }
+            }
+        }
+    });
+
+    var box=new Vue({
+      el:'#box',
+      data:{
+        animate:false,
+        index:0,
+        item:"",
+        items:[
+      	  {
+      		  broadcastID:'1',
+        	  content:'暂无公告'
+      	  }
+        ]
+      },
+      created(){
+        this.getBroadcast();
+        setInterval(this.scroll,3000);
+      },
+      methods:{
+        getBroadcast:function(){
+          axios.get('/GMS/broadcast/getlauchedBroadcast.do', {
+            params: {
+            }
+          })
+          .then((response)=>{
+        	if(response.data.length!=0){
+	            this.items=response.data;
+	            this.item=this.items[this.index].content;
+	            this.index++;
+        	}
+        	console.log(this.items);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+        },
+        scroll(){
+             this.animate=true;    // 因为在消息向上滚动的时候需要添加css3过渡动画，所以这里需要设置true
+             setTimeout(()=>{      //  这里直接使用了es6的箭头函数，省去了处理this指向偏移问题，代码也比之前简化了很多
+                   if(this.index>=this.items.length){
+                      this.index=0;
+                   }
+          	   	   this.item=this.items[this.index].content;
+                   this.index++;
+             },500)
+          }
+      } 
+    }); 
+    
+    
+    
+    
+
+</script>
+</body>
+</html>

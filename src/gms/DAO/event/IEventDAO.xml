@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 通过namespace为DAO接口实现代理，全名必须与接口全名一致 -->
+<!-- 获取类型全名的方法：打开该java文件，双击全选类型名称，右键选择Copy Qualified Name即可复制全名   -->             
+<mapper namespace="gms.DAO.event.IEventDAO">
+	<!-- id必须与DAO接口声明的方法名一致，parameterType是传入参数类型，parameterType是结果集封装类型 -->
+	<!-- #{变量名}获取传入参数变量或传入对象的成员变量 -->
+	<insert id="insert" parameterType="Event">
+		INSERT INTO event (userID,fieldID,equipmentID,date,endDate,content,judgement,state) 
+		VALUES(#{userID},#{fieldID},#{equipmentID},#{date},#{endDate},#{content},#{judgement},#{state})
+	</insert>
+	
+	<update id="update" parameterType="Event">
+		UPDATE event 
+		SET userID=#{userID},fieldID=#{fieldID},equipmentID=#{equipmentID},date=#{date},endDate=#{endDate},content=#{content},judgement=#{judgement},state=#{state}
+		WHERE eventID=#{eventID}
+	</update>
+	
+	<delete id="overdueEvent" parameterType="int">
+		UPDATE event 
+		SET state=2
+		WHERE eventID=#{eventID}
+	</delete>
+	
+	<delete id="deleteByID" parameterType="int">
+		UPDATE event 
+		SET state=3
+		WHERE eventID=#{eventID}
+	</delete>
+	
+	<delete id="deleteByFieldID" parameterType="int">
+		UPDATE event 
+		SET state=3
+		WHERE fieldID=#{fieldID}
+	</delete>
+	
+	<delete id="deleteByEquipmentID" parameterType="int">
+		UPDATE event 
+		SET state=3
+		WHERE equipmentID=#{equipmentID}
+	</delete>
+	
+	<select id="selectByID" parameterType="int" resultType="Event">
+		SELECT eventID,userID,fieldID,equipmentID,date,endDate,content,judgement,state
+		FROM event
+		WHERE eventID=#{eventID} AND state <![CDATA[<]]>  3
+	</select>
+	
+	<select id="selectAll" resultType="Event">
+		SELECT eventID,userID,fieldID,equipmentID,date,endDate,content,judgement,state
+		FROM event
+		WHERE state <![CDATA[<]]>  3
+	</select>
+	
+	<select id="selectByUserID" parameterType="int" resultType="Event">
+		SELECT eventID,userID,fieldID,equipmentID,date,endDate,content,judgement,state 
+		FROM event
+		WHERE userID=#{userID} AND state <![CDATA[<]]>  3
+	</select>
+	
+	<select id="selectByFieldID" parameterType="int" resultType="Event">
+		SELECT eventID,userID,fieldID,equipmentID,date,endDate,content,judgement,state 
+		FROM event
+		WHERE fieldID=#{fieldID} AND state <![CDATA[<]]>  3
+	</select>
+	
+	<select id="selectByEquipmentID" parameterType="int" resultType="Event">
+		SELECT eventID,userID,fieldID,equipmentID,date,endDate,content,judgement,state 
+		FROM event
+		WHERE equipmentID=#{equipmentID} AND state <![CDATA[<]]>  3
+	</select>
+	
+	<select id="getOverdueEventIDs" resultType="Integer">
+		SELECT eventID
+		FROM event
+		WHERE state <![CDATA[<]]>  2 AND TO_DAYS(endDate) <![CDATA[<]]> TO_DAYS(NOW())
+	</select>
+</mapper>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="gms.DAO.user.PAPFunctionDao">
+    <resultMap type="PAPFunction" id="pAPFunctionMap">
+        <result column="PAPFID" property="PAPFID"/>
+        <result column="PAPF_PID" property="PID"/>
+        <result column="PAPF_PFID" property="PFID"/>
+    </resultMap>
+    
+	<insert id="insertPAPFunction" parameterType="PAPFunction">
+		INSERT INTO PAPFUNCTION (PAPF_PID,PAPF_PFID) VALUES(#{PID},#{PFID})
+	</insert>
+</mapper>

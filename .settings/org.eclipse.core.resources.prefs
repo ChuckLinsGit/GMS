@@ -1,0 +1,8 @@
+eclipse.preferences.version=1
+encoding//WebContent/equip/js/cookie.js=UTF-8
+encoding//WebContent/event/css/style.css=UTF-8
+encoding//src/gms/DAO/equip/IOrdercreateDAO.java=UTF-8
+encoding//src/gms/control/equip/OrdersHandler.java=UTF-8
+encoding//src/gms/control/event/EventHandler.java=GBK
+encoding//src/gms/service/equip/EquipmentImpl.java=UTF-8
+encoding//src/gms/service/equip/OrdercreateImpl.java=UTF-8

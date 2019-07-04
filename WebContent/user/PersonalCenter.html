@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>个人中心</title>
+
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/jumbotron.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">导航</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="home.html">主页</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <div class="navbar-form navbar-right">
+            <a href="home.html" role="button" class="btn btn-success">
+              返回
+            </a>
+          </div>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="UPasswordModal" tabindex="-1" role="dialog" aria-labelledby="UPasswordModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+              &times;
+            </button>
+            <h4 class="modal-title" id="UPasswordModalLabel">
+              修改密码
+            </h4>
+          </div>
+          <div class="modal-body">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label for="OldPassword" class="col-sm-3 control-label">旧密码：</label>
+                <div class="col-sm-6">
+                  <input type="password" class="form-control">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="NewPassword" class="col-sm-3 control-label">新密码：</label>
+                <div class="col-sm-6">
+                  <input type="password" class="form-control">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="TwoPassword" class="col-sm-3 control-label">确认密码：</label>
+                <div class="col-sm-6">
+                  <input type="password" class="form-control">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="center-block" style="width:112px;">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">取消
+                  </button>
+                  <button type="button" class="btn btn-primary">
+                    确认
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal -->
+    </div>
+
+    <div class="container">
+      <header>
+        <h1>个人中心>></h1>
+      </header>
+
+      <hr>
+
+      <div style="margin: 10% auto;" id="editU">
+        <form class="form-horizontal" role="form" id="RadioSelect">
+          <div class="form-group">
+            <div class="col-sm-4 text-center" style="border: 2px solid">
+              <img src="">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">姓名：</label>
+            <div class="col-sm-4 text-center" style="border: 2px solid;">
+              <p></p>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-4">
+              <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#UPasswordModal">修改密码
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-4">
+              <a type="button" class="btn btn-warning" @click="delCookie" href="home.html">退出登录</a>
+            </div>
+          </div>
+        </form>
+      </div>
+      <hr>
+
+      <footer>
+        <p>&copy; 2016 Company, Inc.</p>
+      </footer>
+    </div> 
+
+    <script src="static/js/vue.min.js"></script>
+    <script src="static/js/cookie.js"></script>
+    <script src="static/js/qs.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>window.jQuery || document.write('<script src="static/js/jquery.min.js"><\/script>')</script>
+    <script src="static/js/bootstrap.min.js"></script>
+  </body>
+
+ <script>
+  new Vue({
+	    el: '#editU',
+	    data: {
+	    },
+	    methods:{
+	   		delCookie:function(){
+	   			this.setCookie('UName',"", -1);
+	   		}
+	    }
+	  })
+  </script>
+</html>

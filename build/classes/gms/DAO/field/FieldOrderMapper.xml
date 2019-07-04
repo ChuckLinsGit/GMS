@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+                <!-- namespace：全命名空间 -->
+                <!-- parameterType：传入参数映射类型 -->
+                <!-- resultType：结果映射类型 -->
+<mapper namespace="gms.DAO.field.FieldOrderMapper">
+
+	<insert id="insertOrder" parameterType="FieldOrder">
+	<selectKey keyProperty="orderid" order="AFTER" resultType="java.lang.Integer">
+		SELECT LAST_INSERT_ID()
+	</selectKey>
+		INSERT INTO fieldorder (fieldid,rentstart,rentend,returnid,orderstate,userid,payid,phone)
+		VALUES (#{fieldid},#{rentstart},#{rentend},#{returnid},'预约中',#{userid},#{payid},#{phone})
+	</insert>
+	
+	
+	<!-- 通过订单的唯一编号进行订单过期设置 -->
+	<update id="deleteOrder" parameterType="java.lang.Integer">
+		UPDATE fieldorder
+		SET orderstate='已过时'
+		WHERE orderid=#{orderid}
+	</update>
+	
+	<!-- userid一旦确立，不能更改 -->
+	<update id="updateOrder" parameterType="java.lang.Integer">
+		UPDATE fieldorder
+		SET fieldid=#{fieldid},rentstart=#{rentstart},rentend=#{rentend},returnid=#{rentend},orderstate=#{orderstate},phone=#{phone}
+	</update>
+	
+	<!-- 通过userid和orderid作为查询条件进行赛事用户相关操作 -->
+	<update id="updatefieldForEvent" parameterType="FieldOrder">
+		UPDATE fieldorder
+		SET orderstate='已过时'
+		WHERE orderid=#{orderid} AND userid=userid
+	</update>
+	
+	
+	<select id="selectOrderById" parameterType="java.lang.Integer" resultType="FieldOrder">
+		SELECT * FROM fieldorder
+		WHERE orderid=#{orderid}
+	</select>
+	
+	<select id="selectOrderByUserId" parameterType="java.lang.Integer" resultType="FieldOrder">
+		SELECT * FROM fieldorder
+		WHERE userid=#{userid}
+	</select>
+	
+	<select id="selectAll" resultType="FieldOrder">
+		SELECT * FROM fieldorder
+	</select>
+	
+	<select id="selectByfidAndstate" parameterType="java.lang.Integer" resultType="FieldOrder">
+		SELECT * FROM fieldorder
+		WHERE fieldid=#{fieldid} AND orderstate!='已过时'
+	</select>
+	
+	<!-- 连表查询需要去重 group by -->
+	<select id="selectOrderByUidOverT" parameterType="java.lang.Integer" resultType="MixFieldOrder">
+		SELECT fieldorder.orderid,rentstart,rentend,orderstate,field.fieldid,fieldname,phone,pay.payid,payment.paymentid,money
+		FROM payment LEFT JOIN(pay LEFT JOIN (fieldorder LEFT JOIN field ON fieldorder.fieldid = field.fieldid) ON pay.fieldid=fieldorder.fieldid) ON pay.payid = payment.payid
+		WHERE fieldorder.userid=#{userid}
+		AND fieldorder.orderstate =  '已过时'
+		GROUP BY fieldorder.orderid
+	</select>
+	
+	<select id="selectEAll" resultType="FOrderExtent">
+		SELECT fieldorder.orderid,field.fieldid,rentstart,rentend,orderstate,phone,fieldname,unitprice
+		FROM payment LEFT JOIN(pay LEFT JOIN (fieldorder LEFT JOIN field ON fieldorder.fieldid = field.fieldid) ON pay.fieldid=fieldorder.fieldid) ON pay.payid = payment.payid
+		WHERE fieldorder.orderstate = '预约中'
+		GROUP BY fieldorder.orderid
+	</select>
+	
+	<select id="selectPaidOrderWithUsr" resultType="MixFieldOrder">
+		SELECT fieldorder.orderid,rentstart,rentend,orderstate,field.fieldid,fieldname,phone,pay.payid,payment.paymentid,money
+		FROM payment LEFT JOIN(pay LEFT JOIN (fieldorder LEFT JOIN field ON fieldorder.fieldid = field.fieldid) ON pay.fieldid=fieldorder.fieldid) ON pay.payid = payment.payid
+		WHERE fieldorder.userid=#{userid}
+		AND pay.paystate =  '已支付'
+		AND fieldorder.orderstate='预约中'
+		GROUP BY fieldorder.orderid
+	</select>
+	
+	<select id="selectEAllByUsr" parameterType="int" resultType="FOrderExtent">
+		SELECT orderid,field.fieldid,rentstart,rentend,orderstate,phone,fieldname,unitprice,money,pay.payid
+		FROM payment LEFT JOIN(pay LEFT JOIN (fieldorder LEFT JOIN field ON fieldorder.fieldid = field.fieldid) ON pay.fieldid=fieldorder.fieldid) ON pay.payid = payment.payid
+		WHERE fieldorder.orderstate = '预约中'
+		AND pay.paystate = '未支付' AND fieldorder.userid=#{userid}
+		GROUP BY fieldorder.orderid
+	</select>
+	
+</mapper>

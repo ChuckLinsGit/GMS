@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>功能管理页</title>
+
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/jumbotron.css" rel="stylesheet">
+    <style>
+      th,td{
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">导航</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="home.html">主页</a>
+          <a class="navbar-brand" href="UserManager.html">用户管理</a>
+          <a class="navbar-brand" href="RoleManager.html">角色管理</a>
+          <a class="navbar-brand" href="PermissionManager.html">权限管理</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <div class="navbar-form navbar-right">
+            <a href="home.html" role="button" class="btn btn-success">
+              返回
+            </a>
+          </div>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+      <header>
+        <h1>功能管理页>></h1>
+      </header>
+
+      <hr>
+
+      <div style="margin: 10% auto;" id="selcetForm" action="/PFunction/PFunctionList.do" method="post">
+        <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="input-group col-sm-3">
+              <input type="text" class="form-control" v-model="searchString" placeholder="输入搜索内容">
+              <div class="input-group-btn">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" id="selectBtn">
+                  {{BtnName}}
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right">
+                  <li v-for="(item,index)  in List" v-on:click="addValue(index)" ><a href="#">{{item.title}}</a></li>
+                </ul>
+              </div><!-- /btn-group -->
+            </div><!-- /input-group -->
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-8" style="padding: 0px;">
+              <button type="button" class="btn btn-primary" @click="addBox">添加</button>
+              <table class="table table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <th>功能号</th>
+                    <th>功能名称</th>
+                    <th>功能描述</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item,index) in UserList" v-if="index>(rows-1) && index<(rows+1)">
+                    <td @click="edit(index)" contenteditable="true" v-html="item.pFID"></td>
+                    <td @click="edit(index)" contenteditable="true" v-html="item.pFName"></td>
+                    <td @click="edit(index)" contenteditable="true" v-html="item.pFDetails"></td>
+                    <td><button type="button" @click="updatePFunction(index)" class="btn btn-primary">编辑</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="center-block" style="width:270px;">
+              <ul class="pagination">
+                <li :class="{disabled:pagelocation === 0}" @click="leftbtn"><a href="#">&laquo;</a></li>
+                <li v-for="(item, index) in Cpages" @click="active(index)" v-if="index>(pageColumns-1) && index<(pageColumns+2)" :class="{active:index == pagelocation}">
+                 <a href="#">
+                    {{ item }}
+                 </a>
+                </li>
+                <li :class="{disabled:pagelocation === this.UserList.length-1}" @click="rightbtn"><a href="#">&raquo;</a></li>
+              </ul>
+            </div>
+          </div>
+        </form>
+        <fieldset v-show="seen" >
+		    <legend>新增用户</legend>
+		    <div class="">
+				    <p>
+				        <label>角色号：</label>
+				        <input type="text" v-model="RID" readonly>
+				    </p>
+				    <p>
+				        <label>角色类型：</label>
+				        <input type="text" v-model="RType">
+				    </p>
+				    <p>
+				        <label>角色名称：</label>
+				        <input type="text" v-model="RName">
+				    </p>
+		    <p>
+		        <button class="btn btn-success" @click="add">提交</button>
+		    </p>
+		</div>
+		
+		
+		</fieldset>
+        <fieldset v-show="editSeen" id="Edit">
+		    <legend>编辑用户</legend>
+				<div action="/UserARole/addUserARole.do" method="post">
+				    <p>
+				        <label>角色号：</label>
+				        <input type="text" v-model="RID" readonly>
+				    </p>
+				    <p>
+				        <label>角色类型：</label>
+				        <input type="text" v-model="RType">
+				    </p>
+				    <p>
+				        <label>角色名称：</label>
+				        <input type="text" v-model="RName">
+				    </p>
+				    <p>
+				        <button type="button" class="btn btn-success btn-sm" @click="editSubmit()">提交</button>
+				    </p>
+				</div>
+		 </fieldset>
+      </div>
+
+      <hr>
+
+      <footer>
+        <p>&copy; 2016 Company, Inc.</p>
+      </footer>
+    </div> 
+
+    <script src="static/js/vue.min.js"></script>
+    <script src="static/js/cookie.js"></script>
+    <script src="static/js/qs.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>window.jQuery || document.write('<script src="static/js/jquery.min.js"><\/script>')</script>
+    <script src="static/js/bootstrap.min.js"></script>
+  </body>
+  <script>
+var UM=new Vue({
+      el: '#selcetForm',
+      data: {
+  	    RID:'',	
+      	RType:'',
+      	RName:'',
+        rows:0,
+        weditUser:'',
+        pagelocation:0,
+        seen:false,
+        editSeen:false,
+        editUser:[],
+        buttonMenu:1,
+        pageColumns:0,
+        ins1:1,
+        BtnName:'选择',
+        searchString: "",
+        List: [
+        { id: 0, title: "按功能名称查询" },
+        { id: 1, title: "选择"}
+        ],
+        array:[],
+        UserList:[],
+        Cpages:[]
+      },
+      watch:{
+    	  array:function(){
+    		  this.UserList=this.filteredArticles();
+    		  this.Cpages=this.pages();
+    		  this.$off('mounted');
+    	  },
+    	  searchString:function(){
+    		  console.log(1);
+    		  this.UserList=this.filteredArticles();
+    		  this.Cpages=this.pages();
+    	  }
+      },
+      methods:{
+        active:function(num) {
+          this.pagelocation=num;
+          this.rows=num*1;
+        },
+        leftbtn:function(){
+          if(this.pagelocation>0){
+            this.pagelocation--;
+            this.active(this.pagelocation);
+            if(this.pagelocation==2*(this.ins1-1)-1){
+              this.ins1--;
+              this.pageColumns-=2;
+            }
+          }
+        },
+        rightbtn:function(){
+          if(this.pagelocation<this.UserList.length-1){
+            this.pagelocation++;
+            this.active(this.pagelocation);
+            if(this.pagelocation==2*this.ins1){
+              this.ins1++;
+              this.pageColumns+=2;
+            }
+          }
+        },
+        addValue: function(index) { 
+            this.buttonMenu = index;  
+            this.BtnName = this.List[index].title;
+        },
+        addBox:function(){
+            this.seen = this.seen == false ? true : false;
+        },
+        //提交
+        add:function(){
+                //插入到people中
+//                 this.people.push(this.newPeople);
+//                 this.newPeople = {};
+		  var RType = this.RType,
+              RName = this.RName;
+		  
+      		axios({
+      	      url:'/GMS/PAPFunction/addPAPFunction.do',
+      	      method:'post',
+   		      data:Qs.stringify({
+  		    	   'PID':RType,
+  		           'PFID':RName,
+  		        })
+      	     })
+      	     .then(resp => {
+//       	    	 var temp = resp.data[0].info;
+//       	    	 for(var i in temp){
+//       	    		 this.array.push(temp[i]);
+//       	    	 }		
+			console.log(resp.data);
+      	    })
+      	    .catch(error =>{
+      	      console.log('err');
+      	    })
+            this.seen = false;
+        },
+        updatePFunction:function(index){
+        	this.editSeen=true;
+        	var CeditUser=this.array;
+        	for(let k=0;k<this.UserList.length;k++){
+        		if(this.UserList[index].uID==CeditUser[k].uID){
+        			this.editUser=CeditUser[k];
+        		}
+        	}
+        	this.weditUser=index;
+        },
+        editSubmit:function(){
+            this.editSeen = false;
+            var RType = this.RType,
+                RName = this.RName;
+      		axios({
+      	      url:'/GMS/Role/addRole.do',
+      	      method:'post',
+   		      data:Qs.stringify({
+  		    	   'RType':RType,
+  		           'RName':RName,
+  		        })
+      	     })
+      	     .then(resp => {
+      	    	 var temp = resp.data[0].info;
+      	    	 for(var i in temp){
+      	    		 this.array.push(temp[i]);
+      	    	 }		    	 
+      	    })
+      	    .catch(error =>{
+      	      console.log('err');
+      	    })
+        },
+        filteredArticles: function () {
+            var articles_array = JSON.parse(JSON.stringify(this.array)),
+                searchString = this.searchString;
+
+            if(!searchString){
+              this.ins1=1;
+              this.pageColumns=0;
+              this.pagelocation=0;
+              this.rows=0;
+              return this.array;
+            }else{
+              searchString = searchString.trim().toLowerCase();
+              switch(this.buttonMenu){
+              case 0:
+                  articles_array = articles_array.filter(function(item,index){
+                    if(item.pFName.toLowerCase().indexOf(searchString) !== -1){
+                      let replaceReg = new RegExp(searchString, 'g');
+                      let replaceString = '<span style="color:red;">' + searchString + '</span>';
+                      item.pFName = item.pFName.replace(replaceReg, replaceString);
+                      return item;
+                    }
+                  })
+                  break;
+              case 1:
+                  articles_array = articles_array.filter(function(item){
+                    if(item.pFName.toLowerCase().indexOf(searchString) !== -1 || 
+                  		  item.pFDetails.toLowerCase().indexOf(searchString) !== -1){
+                      let replaceReg = new RegExp(searchString, 'g');
+                      let replaceString = '<span style="color:red;">' + searchString + '</span>';
+                      item.pFName = item.pFName.replace(replaceReg, replaceString);
+                      item.pFDetails = item.pFDetails.replace(replaceReg, replaceString);
+                      return item;
+                    }
+                  })
+                  break;
+              default:
+                  break;
+              }
+              this.ins1=1;
+              this.pageColumns=0;
+              this.pagelocation=0;
+              this.rows=0;
+              // 返回过来后的数组
+              return articles_array;   
+            }
+          },
+        pages:function(){
+          var pageLength=this.UserList.length;
+          var pageArray=[];
+          for(let i=1;i<=pageLength;i++){
+            pageArray.push(i);
+          }
+          return pageArray;
+        }
+      },
+      mounted (){
+ 		axios({
+	      url:'/GMS/PFunction/PFunctionList.do',
+	      method:'post',
+	     })
+	     .then(resp => {
+	    	 var temp = resp.data[0].info;
+	    	 for(var i in temp){
+	    		 this.array.push(temp[i]);
+	    	 }		    	 
+	    })
+	    .catch(error =>{
+	      console.log('err');
+	    })
+      }
+   })
+</script>
+</html>

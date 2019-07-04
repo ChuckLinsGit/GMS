@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 通过namespace为DAO接口实现代理 -->               
+<mapper namespace="gms.DAO.event.IEventInformDAO">
+	<insert id="insert" parameterType="EventInform">
+		INSERT INTO eventinform (userID,date,state,content)
+		VALUES (#{userID},#{date},0,#{content})
+	</insert>
+	
+	<delete id="delete" parameterType="int">
+		UPDATE eventinform
+		SET state=2
+		WHERE informID=#{informID}
+	</delete>
+	
+	<update id="update" parameterType="EventInform">
+		UPDATE eventinform
+		SET userID=#{userID},date=#{date},state=#{state},content=#{content}
+		WHERE informID=#{informID}
+	</update>
+	
+	<update id="confirmEventInform" parameterType="int">
+		UPDATE eventinform
+		SET state=1
+		WHERE informID=#{informID}
+	</update>
+	<select id="selectByID" parameterType="int" resultType="EventInform">
+		SELECT informID,userID,date,state,content
+		FROM eventinform
+		WHERE informID=#{informID} AND state <![CDATA[<]]> 2
+	</select>
+	
+	<select id="selectAll" resultType="EventInform">
+		SELECT informID,userID,date,state,content
+		FROM eventinform
+		WHERE  state <![CDATA[<]]> 2
+	</select>
+	
+	<select id="selectByUserID" parameterType="int" resultType="EventInform">
+		SELECT informID,userID,date,state,content
+		FROM eventinform
+		WHERE userID=#{userID} AND state <![CDATA[<]]> 2
+	</select>
+</mapper>

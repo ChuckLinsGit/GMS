@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gms.DAO.event.IBroadcastDAO">
+	<insert id="insert" parameterType="Broadcast">
+		INSERT INTO broadcast (content,state)
+		VALUES(#{content},#{state})
+	</insert>
+	
+	<delete id="delete" parameterType="int">
+		UPDATE broadcast
+		SET state=2
+		WHERE broadcastID=#{broadcastID}
+	</delete>
+	
+	<update id="update" parameterType="Broadcast">
+		UPDATE broadcast
+		SET content=#{content},state=#{state}
+		WHERE broadcastID=#{broadcastID}
+	</update>
+	
+	<update id="lauchBroadcast" parameterType="int">
+		UPDATE broadcast
+		SET state=1
+		WHERE broadcastID=#{broadcastID}
+	</update>
+	
+	<update id="stopBroadcast" parameterType="int">
+		UPDATE broadcast
+		SET state=0
+		WHERE broadcastID=#{broadcastID}
+	</update>
+	
+	<select id="selectByID" parameterType="int" resultType="Broadcast">
+		SELECT broadcastID,content,state
+		FROM broadcast
+		WHERE broadcastID=#{broadcastID} AND state <![CDATA[<]]> 2
+	</select>
+	
+	<select id="selectALL" resultType="Broadcast">
+		SELECT broadcastID,content,state
+		FROM broadcast
+		WHERE state <![CDATA[<]]> 2
+	</select>
+	
+	<select id="selectlauchedBroadcast" resultType="Broadcast">
+		SELECT broadcastID,content,state
+		FROM broadcast
+		WHERE state =  1
+	</select>
+</mapper>

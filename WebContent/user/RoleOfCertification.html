@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>角色认证页</title>
+
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/jumbotron.css" rel="stylesheet">
+    <style>
+      [v-if] {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">导航</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="home.html">主页</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <div class="navbar-form navbar-right">
+            <a href="register.html" role="button" class="btn btn-success">
+              跳过
+            </a>
+          </div>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+    <!-- 模态框（Modal） -->
+
+    <div class="container">
+      <header>
+        <h1>角色认证页>></h1>
+      </header>
+
+      <hr>
+
+      <div style="margin: 10% auto;">
+        <form class="form-horizontal" role="form" id="RadioSelect">
+          <div class="form-group">
+            <label class="col-sm-4 control-label">角色：</label>
+            <div class="col-sm-4">
+              <div class="radio-inline">
+                <input type="radio"  name="roleType" value="1" v-model="show"  @click="selectRadio" checked>
+                <label>高校人员</label>
+              </div>
+              <div class="radio-inline">
+                <input type="radio"  name="roleType" value="0" v-model="show"  @click="selectRadio">
+                <label>非高校人员</label>
+              </div> 
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="RName" class="col-sm-4 control-label">职业：</label>
+            <div class="col-sm-4">
+              <input type="text" class="form-control" v-model="IRName">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="UName" class="col-sm-4 control-label">姓名：</label>
+            <div class="col-sm-4">
+              <input type="text" class="form-control" v-model="IUName">
+            </div>
+          </div>
+          
+          <div v-show="see">
+            <div class="form-group">
+              <label for="SOTID" class="col-sm-4 control-label">学生/教职工账号：</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" v-model="ISOTID">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="SOTPassword" class="col-sm-4 control-label">学生/教职工密码：</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" v-model="ISOTpassword">
+              </div>
+            </div>
+          </div>
+
+          <div v-if="seen">
+            <div class="form-group">
+              <label for="DocType" class="col-sm-4 control-label">证件类型：</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" v-model="IDocType">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="DocID" class="col-sm-4 control-label">证件号码：</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" v-model="IDocName">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="UPhone" class="col-sm-4 control-label">手机号码：</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" v-model="IUPhone">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="center-block" style="width:112px;">
+              <a role="button" class="btn btn-default" href="home.html">
+                取消
+              </a>
+              <button type="button" class="btn btn-primary" @click="checkrole">
+                    确认
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <hr>
+
+      <footer>
+        <p>&copy; 2016 Company, Inc.</p>
+      </footer>
+    </div> 
+
+    <script src="static/js/vue.min.js"></script>
+    <script>window.jQuery || document.write('<script src="static/js/jquery.min.js"><\/script>')</script>
+    <script src="static/js/bootstrap.min.js"></script>
+  </body>
+
+  <script>
+  new Vue({
+    el: '#RadioSelect',
+    data: {
+      show:'1',
+      seen:false,
+      see:true,
+      IRName:'123',
+      IUName:'123',
+      ISOTID:'123',
+      ISOTpassword:'123',
+      IDocType:'123',
+      IDocName:'123',
+      IUPhone: '123',
+      ORName:'123',
+      OUName:'123',
+      OSOTID:'123',
+      OSOTpassword:'123',
+      ODocType:'123',
+      ODocName:'123',
+      OUPhone: '123',
+    },
+    methods:{
+      selectRadio:function(){
+        if (this.show=='1') {
+          this.seen=true;
+          this.see=false;
+          // this.IRName="";
+          // this.IUName="";
+          // this.ISOTID="";
+          // this.ISOTpassword="";
+        }else{
+          this.seen=false;
+          this.see=true;
+        }
+      },
+      checkrole:function(){
+        if (this.show=='1') {
+          if(this.ORName==this.IRName&&this.OUName==this.IUName&&this.OSOTID==this.ISOTID&&this.OSOTpassword==this.ISOTpassword){
+            window.location.href = 'register.html';
+          }else{
+            alert("认证失败，请检查输入的数据是否正确");
+          }
+        }else{
+          if(this.ORName==this.IRName&&this.OUName==this.IUName&&this.ODocType==this.IDocType&&this.ODocName==this.IDocName&&this.OUPhone==this.IUPhone){
+            alert("success");
+          }else{
+            alert("error");
+          }
+        }
+      }
+    }
+  })
+
+</script>
+</html>
